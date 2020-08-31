@@ -1,7 +1,7 @@
 name: FancyE-Chests
-authors: [Fefo6644]
+authors: [ Fefo6644 ]
 version: ${project.version}
-main: me.fefo.fancyechests.Main
+main: me.fefo.fancyechests.FancyEChests
 api-version: "1.13"
 load: POSTWORLD
 
@@ -11,8 +11,6 @@ permissions:
 
 commands:
   fancyechests:
-    aliases: [fec]
+    aliases: [ fec ]
     permission: fancyechests.use
     permission-message: "§cYou are not allowed to run this command"
-    usage: "§cUsage: /fancyechests set\n§cUsage: /fancyechests remove"
-    description: ""

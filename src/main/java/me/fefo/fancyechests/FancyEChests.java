@@ -1,5 +1,6 @@
 package me.fefo.fancyechests;
 
+import me.fefo.facilites.TaskUtil;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -15,7 +16,7 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.util.UUID;
 
-public final class Main extends JavaPlugin {
+public final class FancyEChests extends JavaPlugin {
   public static final String YAML_HIDDEN_UNTIL = "hiddenUntil";
   public static final String YAML_SHOULD_DISAPPEAR = "shouldDisappear";
 
@@ -34,14 +35,16 @@ public final class Main extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    SpinnyChest.setMain(this);
+    SpinnyChest.setPlugin(this);
+    TaskUtil.setPlugin(this);
 
     try {
       saveDefaultConfig();
       chestsFile = new File(getDataFolder(), "enderchests.yml");
       getDataFolder().mkdirs();
       chestsFile.createNewFile();
-      reload();
+
+      reloadConfig();
     } catch (IOException e) {
       getLogger().severe("Could not create data file!");
       e.printStackTrace();
@@ -58,13 +61,13 @@ public final class Main extends JavaPlugin {
     final CommanderKeen ck = new CommanderKeen(this);
     getCommand("fancyechests").setExecutor(ck);
     getCommand("fancyechests").setTabCompleter(ck);
-    getServer().getPluginManager().registerEvents(new ChestInteractListener(this), this);
-    getServer().getPluginManager().registerEvents(new ChestCloseListener(this), this);
-    getServer().getPluginManager().registerEvents(new ChestRemoveListener(this), this);
-    getServer().getPluginManager().registerEvents(new ChunkLoadListener(this), this);
-    getServer().getPluginManager().registerEvents(new ChunkUnloadListener(this), this);
+    new ChestInteractListener(this);
+    new ChestCloseListener(this);
+    new ChestRemoveListener(this);
+    new ChunkLoadListener(this);
+    new ChunkUnloadListener(this);
 
-    getServer().getScheduler().runTaskTimer(this, () -> {
+    TaskUtil.sync(() -> {
       for (SpinnyChest sc : spinnyChests.values()) {
         if (sc.rotate(2 * Math.PI * rpm)) {
           sc.getLocation().getWorld().spawnParticle(Particle.PORTAL,
@@ -72,16 +75,11 @@ public final class Main extends JavaPlugin {
                                                     1,
                                                     0.0, 0.0, 0.0,
                                                     0.7);
-        } /*else {
-          spinnyChests.put(sc.getUUID(),
-                           new SpinnyChest(sc.getUUID(),
-                                           sc.getHiddenUntil(),
-                                           sc.shouldDisappear()));
-        }*/
+        }
       }
     }, 0L, 1L);
 
-    getServer().getScheduler().runTaskTimer(this, () -> {
+    TaskUtil.sync(() -> {
       final int yamlHash = chestsYaml.getValues(true).hashCode();
       final long now = Instant.now().toEpochMilli();
 
@@ -106,8 +104,14 @@ public final class Main extends JavaPlugin {
     }, 0L, 20L);
   }
 
-  void reload() {
-    reloadConfig();
+  @Override
+  public void onDisable() {
+    CommanderKeen.clearCaches();
+  }
+
+  @Override
+  public void reloadConfig() {
+    super.reloadConfig();
     rpm = getConfig().getDouble("rpm", 45.0);
     delayMillis = getConfig().getLong("secondsUntilReappearance", 60L) * 1000L;
     particle = Particle.valueOf(getConfig().getString("particleType", "END_ROD"));

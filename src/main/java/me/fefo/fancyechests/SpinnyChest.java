@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public final class SpinnyChest {
-  private static Main main;
+  private static FancyEChests plugin;
   private static final @NotNull ItemStack enderChest = new ItemStack(Material.ENDER_CHEST);
 
   private final @NotNull UUID uuid;
@@ -24,18 +24,20 @@ public final class SpinnyChest {
   private final boolean shouldDisappear;
   private long hiddenUntil = 0L;
 
-  static void setMain(Main main) { SpinnyChest.main = main; }
+  static void setPlugin(final FancyEChests plugin) {
+    SpinnyChest.plugin = plugin;
+  }
 
-  public static boolean isPlaceOccupied(@NotNull Location loc) {
+  public static boolean isPlaceOccupied(@NotNull final Location loc) {
     Location _loc = loc.clone();
     _loc.setX(_loc.getBlockX() + .5);
     _loc.setY(_loc.getBlockY() - 1.0);
     _loc.setZ(_loc.getBlockZ() + .5);
     final Collection<Entity> nearbyEntities = _loc.getWorld().getNearbyEntities(_loc, .0625, .0625, .0625);
 
-    for (Entity e : nearbyEntities) {
-      if (e instanceof ArmorStand) {
-        if (main.spinnyChests.containsKey(e.getUniqueId())) {
+    for (final Entity e : nearbyEntities) {
+      if (e.getType() == EntityType.ARMOR_STAND) {
+        if (plugin.spinnyChests.containsKey(e.getUniqueId())) {
           return true;
         }
       }
@@ -70,7 +72,7 @@ public final class SpinnyChest {
   public SpinnyChest(@NotNull final UUID uuid,
                      final long hiddenUntil,
                      final boolean shouldDisappear) {
-    as = ((ArmorStand) main.getServer().getEntity(uuid));
+    as = ((ArmorStand) plugin.getServer().getEntity(uuid));
     this.uuid = uuid;
     this.hiddenUntil = hiddenUntil;
     this.shouldDisappear = shouldDisappear;
@@ -92,11 +94,11 @@ public final class SpinnyChest {
         return;
       }
       as.getEquipment().setHelmet(null);
-      as.getWorld().spawnParticle(main.particle,
+      as.getWorld().spawnParticle(plugin.particle,
                                   as.getEyeLocation(),
-                                  main.particleCount,
+                                  plugin.particleCount,
                                   .0, .0, .0,
-                                  main.particleSpeed);
+                                  plugin.particleSpeed);
     }
   }
 
