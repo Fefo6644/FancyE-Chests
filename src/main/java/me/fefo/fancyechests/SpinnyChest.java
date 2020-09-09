@@ -1,5 +1,6 @@
 package me.fefo.fancyechests;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -33,13 +34,12 @@ public final class SpinnyChest {
     _loc.setX(_loc.getBlockX() + .5);
     _loc.setY(_loc.getBlockY() - 1.0);
     _loc.setZ(_loc.getBlockZ() + .5);
-    final Collection<Entity> nearbyEntities = _loc.getWorld().getNearbyEntities(_loc, .0625, .0625, .0625);
+    final Collection<Entity> nearbyEntities = _loc.getWorld().getNearbyEntities(_loc, 0.0625, 0.0625, 0.0625);
 
     for (final Entity e : nearbyEntities) {
-      if (e.getType() == EntityType.ARMOR_STAND) {
-        if (plugin.spinnyChests.containsKey(e.getUniqueId())) {
-          return true;
-        }
+      if (e.getType() == EntityType.ARMOR_STAND
+          && plugin.spinnyChests.containsKey(e.getUniqueId())) {
+        return true;
       }
     }
     return false;
@@ -72,15 +72,19 @@ public final class SpinnyChest {
   public SpinnyChest(@NotNull final UUID uuid,
                      final long hiddenUntil,
                      final boolean shouldDisappear) {
-    as = ((ArmorStand) plugin.getServer().getEntity(uuid));
+    as = ((ArmorStand) Bukkit.getEntity(uuid));
     this.uuid = uuid;
     this.hiddenUntil = hiddenUntil;
     this.shouldDisappear = shouldDisappear;
   }
 
-  public Location getLocation() { return as.getEyeLocation(); }
+  public Location getLocation() {
+    return as.getEyeLocation();
+  }
 
-  public long getHiddenUntil() { return hiddenUntil; }
+  public long getHiddenUntil() {
+    return hiddenUntil;
+  }
   public void setHiddenUntil(long hiddenUntil) {
     this.hiddenUntil = hiddenUntil;
     if (hiddenUntil == 0L) {
@@ -103,8 +107,12 @@ public final class SpinnyChest {
   }
 
   @NotNull
-  public final UUID getUUID() { return uuid; }
-  public void kill() { as.remove(); }
+  public final UUID getUUID() {
+    return uuid;
+  }
+  public void kill() {
+    as.remove();
+  }
   public boolean rotate(final double rad) {
     if (as == null) {
       return false;
@@ -116,10 +124,16 @@ public final class SpinnyChest {
     return true;
   }
 
-  public void updateUsage() { isBeingUsed = shouldDisappear; }
-  public boolean isBeingUsed() { return isBeingUsed; }
+  public void updateUsage() {
+    isBeingUsed = shouldDisappear;
+  }
+  public boolean isBeingUsed() {
+    return isBeingUsed;
+  }
 
-  public boolean shouldDisappear() { return shouldDisappear; }
+  public boolean shouldDisappear() {
+    return shouldDisappear;
+  }
 
   @Override
   public boolean equals(@Nullable Object o) {
@@ -134,5 +148,7 @@ public final class SpinnyChest {
   }
 
   @Override
-  public int hashCode() { return Objects.hash(as.getUniqueId()); }
+  public int hashCode() {
+    return Objects.hash(as.getUniqueId());
+  }
 }

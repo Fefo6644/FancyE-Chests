@@ -19,9 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,14 +32,10 @@ public final class CommanderKeen implements TabExecutor {
   private static final RootCommandNode<CommandSender> CONSOLE_ROOT_NODE = new RootCommandNode<>();
   private static final CommandDispatcher<CommandSender> CONSOLE_DISPATCHER = new CommandDispatcher<>(CONSOLE_ROOT_NODE);
 
-  private static final Map<String, ParseResults<Player>> RESULTS_CACHE = new HashMap<>();
-  private static final Map<String, ParseResults<CommandSender>> CONSOLE_RESULTS_CACHE = new HashMap<>();
-
   private static FancyEChests plugin;
 
   static {
-    ROOT_NODE.addChild(pLiteral("fec").executes(CommanderKeen::printVersion)
-                                      .then(pLiteral("help").executes(CommanderKeen::printUsage))
+    ROOT_NODE.addChild(pLiteral("fec").executes(CommanderKeen::usage)
                                       .then(pLiteral("nearest").executes(CommanderKeen::teleportNearest))
                                       .then(pLiteral("reload").executes(CommanderKeen::reload))
                                       .then(pLiteral("remove").executes(CommanderKeen::remove)
@@ -50,8 +44,7 @@ public final class CommanderKeen implements TabExecutor {
                                       .then(pLiteral("setpersistent").executes(CommanderKeen::setPersistent))
                                       .build());
 
-    CONSOLE_ROOT_NODE.addChild(literal("fec").executes(CommanderKeen::printVersion)
-                                             .then(literal("help").executes(CommanderKeen::printUsage))
+    CONSOLE_ROOT_NODE.addChild(literal("fec").executes(CommanderKeen::usage)
                                              .then(literal("reload").executes(CommanderKeen::reload))
                                              .build());
   }
@@ -68,25 +61,23 @@ public final class CommanderKeen implements TabExecutor {
     final String cmd = ("fec " + String.join(" ", args)).trim();
 
     if (!(sender instanceof Player)) {
-      final ParseResults<CommandSender> result = CONSOLE_RESULTS_CACHE.getOrDefault(cmd, CONSOLE_DISPATCHER.parse(cmd, sender));
+      final ParseResults<CommandSender> result = CONSOLE_DISPATCHER.parse(cmd, sender);
 
       try {
         CONSOLE_DISPATCHER.execute(result);
-        CONSOLE_RESULTS_CACHE.putIfAbsent(cmd, result);
       } catch (CommandSyntaxException exception) {
-        printUsage(result.getContext().build(cmd));
+        usage(result.getContext().build(cmd));
       }
 
       return true;
     }
 
-    final ParseResults<Player> result = RESULTS_CACHE.getOrDefault(cmd, DISPATCHER.parse(cmd, ((Player) sender)));
+    final ParseResults<Player> result = DISPATCHER.parse(cmd, ((Player) sender));
 
     try {
       DISPATCHER.execute(result);
-      RESULTS_CACHE.putIfAbsent(cmd, result);
     } catch (CommandSyntaxException exception) {
-      printUsage(result.getContext().build(cmd));
+      usage(result.getContext().build(cmd));
     }
 
     return true;
@@ -100,7 +91,7 @@ public final class CommanderKeen implements TabExecutor {
     final String cmd = "fec " + String.join(" ", args);
 
     if (sender instanceof Player) {
-      final ParseResults<Player> result = RESULTS_CACHE.getOrDefault(cmd, DISPATCHER.parse(cmd, ((Player) sender)));
+      final ParseResults<Player> result = DISPATCHER.parse(cmd, ((Player) sender));
 
       return DISPATCHER.getCompletionSuggestions(result)
                        .join()
@@ -109,7 +100,7 @@ public final class CommanderKeen implements TabExecutor {
                        .map(Suggestion::getText)
                        .collect(Collectors.toList());
     } else {
-      final ParseResults<CommandSender> result = CONSOLE_RESULTS_CACHE.getOrDefault(cmd, CONSOLE_DISPATCHER.parse(cmd, sender));
+      final ParseResults<CommandSender> result = CONSOLE_DISPATCHER.parse(cmd, sender);
 
       return CONSOLE_DISPATCHER.getCompletionSuggestions(result)
                                .join()
@@ -120,25 +111,27 @@ public final class CommanderKeen implements TabExecutor {
     }
   }
 
-  private static <S extends CommandSender> int printVersion(final CommandContext<S> context) {
+  private static <S extends CommandSender> int version(final CommandContext<S> context) {
     context.getSource().sendMessage(ColorFormat.format("&3FancyE-Chests &7- &bv"
                                                        + plugin.getDescription().getVersion()));
     return 0;
   }
 
-  private static <S extends CommandSender> int printUsage(final CommandContext<S> context) {
-    printVersion(context);
+  private static <S extends CommandSender> int usage(final CommandContext<S> context) {
+    version(context);
 
     final S source = context.getSource();
 
     if (source instanceof Player) {
       source.sendMessage(ColorFormat.format("&cUsages:"));
-      source.sendMessage(ColorFormat.format("  &c/fancyechests [help|nearest|reload]"));
-      source.sendMessage(ColorFormat.format("  &c/fancyechests remove [nearest]"));
-      source.sendMessage(ColorFormat.format("  &c/fancyechests (set|setpersistent)"));
+      for (final String usage : DISPATCHER.getAllUsage(ROOT_NODE, ((Player) source), false)) {
+        source.sendMessage(ColorFormat.format("  &c/" + usage));
+      }
     } else {
       source.sendMessage(ColorFormat.format("&cUsages:"));
-      source.sendMessage(ColorFormat.format("  &c/fancyechests [help|reload]"));
+      for (final String usage : CONSOLE_DISPATCHER.getAllUsage(CONSOLE_ROOT_NODE, source, false)) {
+        source.sendMessage(ColorFormat.format("  &c/" + usage));
+      }
     }
 
     return 0;
@@ -166,16 +159,16 @@ public final class CommanderKeen implements TabExecutor {
   private static int remove(final CommandContext<Player> context) {
     final Player player = context.getSource();
 
-    if (plugin.spinnyChests.size() > 0) {
-      if (plugin.playersRemovingChest.remove(player.getUniqueId())) {
-        player.sendMessage(ColorFormat.format("&bAction cancelled"));
-      } else {
+    if (plugin.playersRemovingChest.remove(player.getUniqueId())) {
+      player.sendMessage(ColorFormat.format("&bAction cancelled"));
+    } else {
+      if (plugin.spinnyChests.size() > 0) {
         plugin.playersRemovingChest.add(player.getUniqueId());
         player.sendMessage(ColorFormat.format("&bHit an ender chest to remove it"));
         player.sendMessage(ColorFormat.format("&bRun the command again to cancel"));
+      } else {
+        player.sendMessage(ColorFormat.format("&cThere are no loaded ender chests to remove"));
       }
-    } else {
-      player.sendMessage(ColorFormat.format("&cThere are no ender chests to remove"));
     }
     return 0;
   }
@@ -260,11 +253,6 @@ public final class CommanderKeen implements TabExecutor {
                  .min(new ChestsSorter(player))
                  .map(SpinnyChest::getUUID)
                  .orElse(null);
-  }
-
-  public static void clearCaches() {
-    RESULTS_CACHE.clear();
-    CONSOLE_RESULTS_CACHE.clear();
   }
 
   private static final class ChestsSorter implements Comparator<SpinnyChest> {
