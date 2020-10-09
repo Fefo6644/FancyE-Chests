@@ -1,6 +1,5 @@
 package me.fefo.fancyechests;
 
-import com.destroystokyo.paper.brigadier.BukkitBrigadierCommandSource;
 import me.fefo.facilites.TaskUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
