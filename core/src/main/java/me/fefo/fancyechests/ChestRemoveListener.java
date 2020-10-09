@@ -1,7 +1,7 @@
 package me.fefo.fancyechests;
 
-import me.fefo.facilites.ColorFormat;
 import me.fefo.facilites.SelfRegisteringListener;
+import me.fefo.facilites.VariousUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -46,7 +46,8 @@ public final class ChestRemoveListener extends SelfRegisteringListener {
           plugin.getLogger().severe("Could not save data file!");
           ex.printStackTrace();
         }
-        damager.sendMessage(ColorFormat.format("&bEnder chest removed"));
+
+        VariousUtils.sendMessage(damager, CommanderKeen.CHEST_REMOVED);
       }
     }
   }

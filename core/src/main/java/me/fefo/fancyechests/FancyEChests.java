@@ -1,11 +1,13 @@
 package me.fefo.fancyechests;
 
+import com.destroystokyo.paper.brigadier.BukkitBrigadierCommandSource;
 import me.fefo.facilites.TaskUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.world.ChunkLoadEvent;
@@ -22,6 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class FancyEChests extends JavaPlugin {
+
   public static final String YAML_HIDDEN_UNTIL = "hiddenUntil";
   public static final String YAML_SHOULD_DISAPPEAR = "shouldDisappear";
 
@@ -51,15 +54,22 @@ public final class FancyEChests extends JavaPlugin {
   double particleSpeed = 0.1;
   private ChunksListener chunksListener;
 
+  private final TaskUtil scheduler;
+
   public FancyEChests() {
     super();
-    TaskUtil.setPlugin(this);
+
+    scheduler = new TaskUtil(this);
     FecHolder.setPlugin(this);
     SpinnyChest.setPlugin(this);
     getDataFolder().mkdirs();
     chestsFile = new File(getDataFolder(), "enderchests.yml");
     playerDataFolder = new File(getDataFolder(), "playerdata");
     playerDataFolder.mkdirs();
+  }
+
+  public TaskUtil getScheduler() {
+    return scheduler;
   }
 
   @Override
@@ -80,9 +90,24 @@ public final class FancyEChests extends JavaPlugin {
     Bukkit.getOnlinePlayers().forEach(player -> playerInventories.get(player.getUniqueId())
                                                                  .createInventory(player));
 
-    final CommanderKeen ck = new CommanderKeen(this);
-    getCommand("fancyechests").setExecutor(ck);
-    getCommand("fancyechests").setTabCompleter(ck);
+    final PluginCommand command = getCommand("fancyechests");
+    if (command == null) {
+      Thread.dumpStack();
+      Bukkit.getPluginManager().disablePlugin(this);
+      return;
+    }
+
+    try {
+      Class.forName("com.destroystokyo.paper.brigadier.BukkitBrigadierCommandSource");
+      new CommandRegisteredListener<>(this);
+    } catch (ClassNotFoundException e) {
+      // shrug
+    }
+
+    final CommanderKeen<Player> ck = new CommanderKeen<>(this, Player.class::cast);
+    command.setExecutor(ck);
+    command.setTabCompleter(ck);
+
     new ChestInteractListener(this);
     new ChestCloseListener(this);
     new ChestRemoveListener(this);
@@ -90,9 +115,9 @@ public final class FancyEChests extends JavaPlugin {
     new PlayerLoginListener(this);
     new PlayerQuitListener(this);
 
-    TaskUtil.async(() -> playerInventories.values().forEach(FecHolder::save), 20L * 60L, 20L * 60L);
+    scheduler.async(() -> playerInventories.values().forEach(FecHolder::save), 20L * 60L, 20L * 60L);
 
-    TaskUtil.sync(() -> {
+    scheduler.sync(() -> {
       for (final SpinnyChest sc : spinnyChests.values()) {
         if (sc.rotate(2 * Math.PI * rpm)) {
           sc.getLocation().getWorld().spawnParticle(Particle.PORTAL,
@@ -104,7 +129,7 @@ public final class FancyEChests extends JavaPlugin {
       }
     }, 1L, 1L);
 
-    TaskUtil.sync(() -> {
+    scheduler.sync(() -> {
       final int yamlHash = chestsYaml.getValues(true).hashCode();
       final long now = Instant.now().toEpochMilli();
 

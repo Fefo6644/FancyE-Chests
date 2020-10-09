@@ -4,8 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 import org.jetbrains.annotations.NotNull;
@@ -16,63 +14,62 @@ import java.util.Objects;
 import java.util.UUID;
 
 public final class SpinnyChest {
-  private static FancyEChests plugin;
-  private static final @NotNull ItemStack enderChest = new ItemStack(Material.ENDER_CHEST);
 
-  private final @NotNull UUID uuid;
-  private final ArmorStand as;
-  private boolean isBeingUsed = false;
-  private final boolean shouldDisappear;
-  private long hiddenUntil = 0L;
+  private static FancyEChests plugin;
+  private static final ItemStack ITEM_STACK = new ItemStack(Material.ENDER_CHEST);
 
   static void setPlugin(final FancyEChests plugin) {
     SpinnyChest.plugin = plugin;
   }
 
-  public static boolean isPlaceOccupied(@NotNull final Location loc) {
-    Location _loc = loc.clone();
-    _loc.setX(_loc.getBlockX() + .5);
-    _loc.setY(_loc.getBlockY() - 1.0);
-    _loc.setZ(_loc.getBlockZ() + .5);
-    final Collection<Entity> nearbyEntities = _loc.getWorld().getNearbyEntities(_loc, 0.0625, 0.0625, 0.0625);
+  public static boolean isPlaceOccupied(@NotNull final Location location) {
+    final Location loc = location.clone();
+    loc.setX(loc.getBlockX() + .5);
+    loc.setY(loc.getBlockY() - 1.0);
+    loc.setZ(loc.getBlockZ() + .5);
+    final Collection<ArmorStand> nearbyEntities = loc.getWorld().getNearbyEntitiesByType(ArmorStand.class, loc, 0.0625, 0.0625, 0.0625);
 
-    for (final Entity e : nearbyEntities) {
-      if (e.getType() == EntityType.ARMOR_STAND
-          && plugin.spinnyChests.containsKey(e.getUniqueId())) {
+    for (final ArmorStand armorStand : nearbyEntities) {
+      if (plugin.spinnyChests.containsKey(armorStand.getUniqueId())) {
         return true;
       }
     }
     return false;
   }
 
-  public SpinnyChest(@NotNull final Location loc,
-                     final boolean shouldDisappear) {
-    loc.setX(loc.getBlockX() + 0.5d);
-    loc.setY(loc.getBlockY() - 1.0d);
-    loc.setZ(loc.getBlockZ() + 0.5d);
+  private final UUID uuid;
+  private final ArmorStand as;
+  private final boolean shouldDisappear;
+  private boolean isBeingUsed = false;
+  private long hiddenUntil = 0L;
+
+  public SpinnyChest(@NotNull final Location loc, final boolean shouldDisappear) {
+    loc.setX(loc.getBlockX() + 0.5);
+    loc.setY(loc.getBlockY() - 1.0);
+    loc.setZ(loc.getBlockZ() + 0.5);
     loc.setYaw(0.0f);
     loc.setPitch(0.0f);
-    as = ((ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND));
-    as.setHeadPose(EulerAngle.ZERO);
-    as.setBodyPose(EulerAngle.ZERO);
-    as.setLeftArmPose(EulerAngle.ZERO);
-    as.setRightArmPose(EulerAngle.ZERO);
-    as.setLeftLegPose(EulerAngle.ZERO);
-    as.setRightLegPose(EulerAngle.ZERO);
-    as.setGravity(false);
-    as.setVisible(false);
-    as.setBasePlate(false);
-    as.setSmall(false);
-    as.getEquipment().setHelmet(enderChest);
+
+    as = loc.getWorld().spawn(loc, ArmorStand.class, armorStand -> {
+      armorStand.setHeadPose(EulerAngle.ZERO);
+      armorStand.setBodyPose(EulerAngle.ZERO);
+      armorStand.setLeftArmPose(EulerAngle.ZERO);
+      armorStand.setRightArmPose(EulerAngle.ZERO);
+      armorStand.setLeftLegPose(EulerAngle.ZERO);
+      armorStand.setRightLegPose(EulerAngle.ZERO);
+      armorStand.setGravity(false);
+      armorStand.setVisible(false);
+      armorStand.setBasePlate(false);
+      armorStand.setSmall(false);
+      armorStand.getEquipment().setHelmet(ITEM_STACK);
+    });
     uuid = as.getUniqueId();
 
     this.shouldDisappear = shouldDisappear;
   }
 
-  public SpinnyChest(@NotNull final UUID uuid,
-                     final long hiddenUntil,
-                     final boolean shouldDisappear) {
-    as = ((ArmorStand) Bukkit.getEntity(uuid));
+  public SpinnyChest(@NotNull final UUID uuid, final long hiddenUntil, final boolean shouldDisappear) {
+    as = (ArmorStand) Bukkit.getEntity(uuid);
     this.uuid = uuid;
     this.hiddenUntil = hiddenUntil;
     this.shouldDisappear = shouldDisappear;
@@ -85,6 +82,7 @@ public final class SpinnyChest {
   public long getHiddenUntil() {
     return hiddenUntil;
   }
+
   public void setHiddenUntil(long hiddenUntil) {
     this.hiddenUntil = hiddenUntil;
     if (hiddenUntil == 0L) {
@@ -92,7 +90,7 @@ public final class SpinnyChest {
       if (as == null) {
         return;
       }
-      as.getEquipment().setHelmet(enderChest);
+      as.getEquipment().setHelmet(ITEM_STACK);
     } else {
       if (as == null) {
         return;
@@ -110,23 +108,23 @@ public final class SpinnyChest {
   public final UUID getUUID() {
     return uuid;
   }
+
   public void kill() {
     as.remove();
   }
+
   public boolean rotate(final double rad) {
     if (as == null) {
       return false;
     }
-    as.setHeadPose(as.getHeadPose()
-                     .add(.0,
-                          rad / 1200.0,
-                          .0));
+    as.setHeadPose(as.getHeadPose().add(0.0, rad / 1200.0, 0.0));
     return true;
   }
 
   public void updateUsage() {
     isBeingUsed = shouldDisappear;
   }
+
   public boolean isBeingUsed() {
     return isBeingUsed;
   }
@@ -136,7 +134,7 @@ public final class SpinnyChest {
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
+  public boolean equals(@Nullable final Object o) {
     if (this == o) {
       return true;
     }

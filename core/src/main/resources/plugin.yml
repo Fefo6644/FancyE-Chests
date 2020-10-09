@@ -1,0 +1,26 @@
+{
+  "name": "FancyE-Chests",
+  "authors": [
+    "Fefo6644"
+  ],
+  "version": "${project.version}",
+  "main": "me.fefo.fancyechests.FancyEChests",
+  "api-version": "1.13",
+  "load": "POSTWORLD",
+
+  "permissions": {
+    "fancyechests.use": {
+      "default": "op"
+    }
+  },
+
+  "commands": {
+    "fancyechests": {
+      "aliases": [
+        "fec"
+      ],
+      "permission": "fancyechests.use",
+      "permission-message": "§cYou are not allowed to run this command"
+    }
+  }
+}

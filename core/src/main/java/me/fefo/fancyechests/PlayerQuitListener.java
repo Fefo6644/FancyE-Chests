@@ -6,6 +6,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerQuitListener extends SelfRegisteringListener {
+
   private final FancyEChests plugin;
 
   public PlayerQuitListener(final FancyEChests plugin) {

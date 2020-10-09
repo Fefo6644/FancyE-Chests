@@ -8,6 +8,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class PlayerLoginListener extends SelfRegisteringListener {
+
   private final FancyEChests plugin;
 
   public PlayerLoginListener(@NotNull final FancyEChests plugin) {

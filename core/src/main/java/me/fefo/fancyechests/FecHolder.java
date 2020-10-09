@@ -1,7 +1,7 @@
 package me.fefo.fancyechests;
 
-import me.fefo.facilites.TaskUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class FecHolder {
+
   private static final Pattern VALID_SLOT_NODE = Pattern.compile("(?i)^fancyechests\\.slots\\.(\\d+)$");
   private static final int PERM_PREFIX_LENGTH = "fancyechests.slots.".length();
 
@@ -29,7 +30,7 @@ public class FecHolder {
   private final UUID uuid;
   private Inventory fancyEnderChest;
   private final File playerFile;
-  private final YamlConfiguration yamlFile;
+  private final YamlConfiguration yamlFile = new YamlConfiguration();
   private boolean requiresMigration;
   private int lastHash = 0;
 
@@ -45,12 +46,16 @@ public class FecHolder {
     if (requiresMigration) {
       try {
         playerFile.createNewFile();
-      } catch (IOException e) {
-        e.printStackTrace();
+      } catch (IOException exception) {
+        exception.printStackTrace();
       }
     }
 
-    yamlFile = YamlConfiguration.loadConfiguration(playerFile);
+    try {
+      yamlFile.load(playerFile);
+    } catch (IOException | InvalidConfigurationException e) {
+      e.printStackTrace();
+    }
   }
 
   public void migrationCompleted() {
@@ -90,7 +95,7 @@ public class FecHolder {
     };
 
     if (runAsync) {
-      TaskUtil.async(task);
+      plugin.getScheduler().async(task);
     } else {
       task.run();
     }
@@ -102,7 +107,7 @@ public class FecHolder {
 
   public void deleteData(final boolean runAsync) {
     if (runAsync) {
-      TaskUtil.async(playerFile::delete);
+      plugin.getScheduler().async(playerFile::delete);
     } else {
       playerFile.delete();
     }
