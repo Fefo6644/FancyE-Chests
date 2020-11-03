@@ -10,6 +10,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 public final class ChunksListener extends SelfRegisteringListener {
+
   private final FancyEChests plugin;
 
   public ChunksListener(final FancyEChests plugin) {
@@ -32,7 +33,7 @@ public final class ChunksListener extends SelfRegisteringListener {
         final ConfigurationSection cs = plugin.chestsYaml.getConfigurationSection(entity.getUniqueId()
                                                                                         .toString());
         plugin.spinnyChests.put(entity.getUniqueId(),
-                                new SpinnyChest(entity.getUniqueId(),
+                                new SpinnyChest(plugin, entity.getUniqueId(),
                                                 cs.getLong(FancyEChests.YAML_HIDDEN_UNTIL),
                                                 cs.getBoolean(FancyEChests.YAML_SHOULD_DISAPPEAR)));
       }
@@ -46,11 +47,10 @@ public final class ChunksListener extends SelfRegisteringListener {
     }
 
     for (final Entity entity : event.getChunk().getEntities()) {
-      if (entity.getType() != EntityType.ARMOR_STAND) {
-        continue;
+      if (entity.getType() == EntityType.ARMOR_STAND) {
+        plugin.spinnyChests.remove(entity.getUniqueId());
       }
 
-      plugin.spinnyChests.remove(entity.getUniqueId());
     }
   }
 }

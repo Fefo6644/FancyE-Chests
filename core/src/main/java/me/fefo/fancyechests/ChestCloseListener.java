@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public final class ChestCloseListener extends SelfRegisteringListener {
+
   private final FancyEChests plugin;
 
   public ChestCloseListener(final FancyEChests plugin) {

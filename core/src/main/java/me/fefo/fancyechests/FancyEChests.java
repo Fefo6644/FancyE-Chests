@@ -26,8 +26,7 @@ public final class FancyEChests extends JavaPlugin {
 
   public static final String YAML_HIDDEN_UNTIL = "hiddenUntil";
   public static final String YAML_SHOULD_DISAPPEAR = "shouldDisappear";
-
-  static final Sound sound;
+  public static final Sound SOUND;
 
   static {
     Sound temp;
@@ -36,34 +35,30 @@ public final class FancyEChests extends JavaPlugin {
     } catch (IllegalArgumentException ignored) {
       temp = Sound.valueOf("BLOCK_ENDER_CHEST_OPEN");
     }
-    sound = temp;
+    SOUND = temp;
   }
 
-  final Map<UUID, FecHolder> playerInventories = Collections.synchronizedMap(new Hashtable<>());
-  final Map<UUID, SpinnyChest> spinnyChests = Collections.synchronizedMap(new Hashtable<>());
-  final Map<UUID, UUID> playersUsingChest = Collections.synchronizedMap(new Hashtable<>());
-  final Set<UUID> playersRemovingChest = Collections.synchronizedSet(new HashSet<>());
-  final File chestsFile;
-  final File playerDataFolder;
-  YamlConfiguration chestsYaml;
+  public final Map<UUID, FecHolder> playerInventories = Collections.synchronizedMap(new Hashtable<>());
+  public final Map<UUID, SpinnyChest> spinnyChests = Collections.synchronizedMap(new Hashtable<>());
+  public final Map<UUID, UUID> playersUsingChest = Collections.synchronizedMap(new Hashtable<>());
+  public final Set<UUID> playersRemovingChest = Collections.synchronizedSet(new HashSet<>());
+  public final File chestsFile = new File(getDataFolder(), "enderchests.yml");
+  public final File playerDataFolder = new File(getDataFolder(), "playerdata");
+
+  public YamlConfiguration chestsYaml;
+  public long delayMillis = 60000L;
+  public Particle particle = Particle.END_ROD;
+  public int particleCount = 100;
+  public double particleSpeed = 0.1;
   private double rpm = 45.0;
-  long delayMillis = 60000L;
-  Particle particle = Particle.END_ROD;
-  int particleCount = 100;
-  double particleSpeed = 0.1;
   private ChunksListener chunksListener;
 
-  private final TaskUtil scheduler;
+  private final TaskUtil scheduler = new TaskUtil(this);
 
   public FancyEChests() {
     super();
 
-    scheduler = new TaskUtil(this);
-    FecHolder.setPlugin(this);
-    SpinnyChest.setPlugin(this);
     getDataFolder().mkdirs();
-    chestsFile = new File(getDataFolder(), "enderchests.yml");
-    playerDataFolder = new File(getDataFolder(), "playerdata");
     playerDataFolder.mkdirs();
   }
 
@@ -77,23 +72,20 @@ public final class FancyEChests extends JavaPlugin {
       saveDefaultConfig();
       chestsFile.createNewFile();
     } catch (IOException exception) {
-      getLogger().severe("Could not create data file!");
-      exception.printStackTrace();
-      Bukkit.getPluginManager().disablePlugin(this);
-      return;
+      throw new RuntimeException("Could not create data file!");
     }
 
     Bukkit.getOnlinePlayers().stream()
           .map(Player::getUniqueId)
-          .forEach(uuid -> playerInventories.put(uuid, new FecHolder(uuid)));
-    Bukkit.getOnlinePlayers().forEach(player -> playerInventories.get(player.getUniqueId())
-                                                                 .createInventory(player));
+          .forEach(uuid -> playerInventories.put(uuid, new FecHolder(this, uuid)));
+    Bukkit.getOnlinePlayers().forEach(player -> {
+      final FecHolder holder = playerInventories.get(player.getUniqueId());
+      holder.createInventory(player);
+    });
 
     final PluginCommand command = getCommand("fancyechests");
     if (command == null) {
-      Thread.dumpStack();
-      Bukkit.getPluginManager().disablePlugin(this);
-      return;
+      throw new RuntimeException();
     }
 
     try {
@@ -114,16 +106,13 @@ public final class FancyEChests extends JavaPlugin {
     new PlayerLoginListener(this);
     new PlayerQuitListener(this);
 
-    scheduler.async(() -> playerInventories.values().forEach(FecHolder::save), 20L * 60L, 20L * 60L);
+    scheduler.sync(() -> playerInventories.values().forEach(holder -> holder.save(scheduler::async)), 20L * 60L, 20L * 60L);
 
     scheduler.sync(() -> {
       for (final SpinnyChest sc : spinnyChests.values()) {
         if (sc.rotate(2 * Math.PI * rpm)) {
-          sc.getLocation().getWorld().spawnParticle(Particle.PORTAL,
-                                                    sc.getLocation(),
-                                                    1,
-                                                    0.0, 0.0, 0.0,
-                                                    0.7);
+          sc.getLocation().getWorld().spawnParticle(Particle.PORTAL, sc.getLocation(),
+                                                    1, 0.0, 0.0, 0.0, 0.7);
         }
       }
     }, 1L, 1L);
@@ -133,12 +122,9 @@ public final class FancyEChests extends JavaPlugin {
       final long now = Instant.now().toEpochMilli();
 
       for (final SpinnyChest sc : spinnyChests.values()) {
-        if (sc.getHiddenUntil() != 0L &&
-            sc.getHiddenUntil() <= now) {
+        if (sc.getHiddenUntil() != 0L && sc.getHiddenUntil() <= now) {
           sc.setHiddenUntil(0L);
-          chestsYaml.set(sc.getUUID().toString() +
-                         chestsYaml.options().pathSeparator() +
-                         YAML_HIDDEN_UNTIL, 0L);
+          chestsYaml.set(sc.getUUID() + "." + YAML_HIDDEN_UNTIL, 0L);
         }
       }
 
@@ -157,13 +143,7 @@ public final class FancyEChests extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    playerInventories.values().forEach(holder -> {
-      if (!holder.requiresMigration()) {
-        holder.save();
-      } else {
-        holder.deleteData();
-      }
-    });
+    playerInventories.values().forEach(FecHolder::save);
     playerInventories.clear();
     spinnyChests.clear();
   }

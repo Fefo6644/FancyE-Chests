@@ -5,12 +5,6 @@ import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
-import me.fefo.facilites.VariousUtils;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -31,19 +25,6 @@ import java.util.stream.Collectors;
 
 public final class CommanderKeen<S extends Player> implements TabExecutor {
 
-  public static final BaseComponent[] PLAYERS_ONLY = TextComponent.fromLegacyText("§cOnly players can run this command!");
-  public static final BaseComponent[] USAGE = TextComponent.fromLegacyText("§cUsage:");
-  public static final BaseComponent[] FILES_RELOADED = TextComponent.fromLegacyText("§bFiles reloaded successfully!");
-  public static final BaseComponent[] ACTION_CANCELLED = TextComponent.fromLegacyText("§bAction cancelled");
-  public static final BaseComponent[] CHEST_REMOVED = TextComponent.fromLegacyText("§bEnder chest removed");
-  public static final BaseComponent[] HIT_TO_REMOVE = TextComponent.fromLegacyText("§bHit an ender chest to remove it");
-  public static final BaseComponent[] RUN_TO_CANCEL = TextComponent.fromLegacyText("§bRun the command again to cancel");
-  public static final BaseComponent[] NO_LOADED_CHESTS = TextComponent.fromLegacyText("§cThere are no loaded ender chests to remove");
-  public static final BaseComponent[] COULDNT_FIND_NEAREST = TextComponent.fromLegacyText("§cCouldn't find the nearest ender chest within loaded chunks in this world");
-  public static final BaseComponent[] ALREADY_OCCUPIED = TextComponent.fromLegacyText("§cThis place is already occupied by another ender chest!");
-  public static final BaseComponent[] SELECT_ANOTHER_LOCATION = TextComponent.fromLegacyText("§cPlease, select another location");
-  public static final BaseComponent[] CHEST_PLACED = TextComponent.fromLegacyText("§bEnder chest placed successfully!");
-
   private final FancyEChests plugin;
   private final Function<CommandSender, S> transformer;
   private final CommandDispatcher<S> dispatcher = new CommandDispatcher<>();
@@ -51,7 +32,7 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
   public CommanderKeen(final FancyEChests plugin, final Function<CommandSender, S> transformer) {
     this.plugin = plugin;
     this.transformer = transformer;
-    final CommandProvider<S> provider = CommandProvider.of(this::version, this::reload,
+    final CommandProvider<S> provider = CommandProvider.of(this::version, this::usage, this::reload,
                                                            this::remove, this::removeNearest,
                                                            this::set, this::setPersistent,
                                                            this::teleportNearest, "fec");
@@ -63,7 +44,7 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
     final String cmd = "fec " + String.join(" ", args);
 
     if (!(sender instanceof Player)) {
-      VariousUtils.sendMessage(sender, PLAYERS_ONLY);
+      Message.PLAYERS_ONLY.send(sender);
       return true;
     }
 
@@ -95,26 +76,20 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
 
   private int version(final CommandContext<S> context) {
     final S source = context.getSource();
-    final BaseComponent[] version = TextComponent.fromLegacyText("§3FancyE-Chests §7- §bv" + plugin.getDescription().getVersion());
-    VariousUtils.sendMessage(source, version);
+    Message.VERSION.send(source, plugin.getDescription().getVersion());
     return 1;
   }
 
-  private void usage(final CommandContext<S> context) {
+  private int usage(final CommandContext<S> context) {
     version(context);
-
     final S source = context.getSource();
 
-    VariousUtils.sendMessage(source, USAGE);
+    Message.USAGE_TITLE.send(source);
     for (final String usage : dispatcher.getAllUsage(dispatcher.getRoot(), source, true)) {
-      final TextComponent usageComponent = new TextComponent("/" + usage);
-      usageComponent.setColor(ChatColor.RED);
-      final HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] { new TextComponent(usageComponent) });
-      usageComponent.setHoverEvent(hoverEvent);
-      final ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + usage);
-      usageComponent.setClickEvent(clickEvent);
-      VariousUtils.sendMessage(source, usageComponent);
+      Message.USAGE_COMMAND.send(source, usage);
     }
+
+    return 1;
   }
 
   private int teleportNearest(final CommandContext<S> context) {
@@ -124,7 +99,7 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
     if (nearestChest != null) {
       source.teleport(plugin.spinnyChests.get(nearestChest).getLocation());
     } else {
-      VariousUtils.sendMessage(source, COULDNT_FIND_NEAREST);
+      Message.COULDNT_FIND_NEAREST.send(source);
     }
 
     return 1;
@@ -132,7 +107,7 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
 
   private int reload(final CommandContext<S> context) {
     plugin.reloadConfig();
-    VariousUtils.sendMessage(context.getSource(), FILES_RELOADED);
+    Message.FILES_RELOADED.send(context.getSource());
     return 1;
   }
 
@@ -140,14 +115,14 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
     final S source = context.getSource();
 
     if (plugin.playersRemovingChest.remove(source.getUniqueId())) {
-      VariousUtils.sendMessage(source, ACTION_CANCELLED);
+      Message.ACTION_CANCELLED.send(source);
     } else {
       if (plugin.spinnyChests.size() > 0) {
         plugin.playersRemovingChest.add(source.getUniqueId());
-        VariousUtils.sendMessage(source, HIT_TO_REMOVE);
-        VariousUtils.sendMessage(source, RUN_TO_CANCEL);
+        Message.HIT_TO_REMOVE.send(source);
+        Message.RUN_TO_CANCEL.send(source);
       } else {
-        VariousUtils.sendMessage(source, NO_LOADED_CHESTS);
+        Message.NO_LOADED_CHESTS.send(source);
       }
     }
     return 1;
@@ -173,14 +148,9 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
         ex.printStackTrace();
       }
 
-      final TextComponent chestRemovedAt = new TextComponent("Ender chest removed at ");
-      chestRemovedAt.setColor(ChatColor.AQUA);
-      final TextComponent chestCoords = new TextComponent("x:" + x + " y:" + y + " z:" + z);
-      chestCoords.setColor(ChatColor.GRAY);
-      VariousUtils.sendMessage(source, chestRemovedAt, chestCoords);
-
+      Message.CHEST_REMOVED_AT.send(source, String.valueOf(x), String.valueOf(y), String.valueOf(z));
     } else {
-      VariousUtils.sendMessage(source, COULDNT_FIND_NEAREST);
+      Message.COULDNT_FIND_NEAREST.send(source);
     }
 
     return 1;
@@ -203,14 +173,14 @@ public final class CommanderKeen<S extends Player> implements TabExecutor {
   private void createEnderChest(final S source, final boolean shouldDisappear) {
     final Location loc = source.getLocation().clone();
 
-    if (SpinnyChest.isPlaceOccupied(loc)) {
-      VariousUtils.sendMessage(source, ALREADY_OCCUPIED);
-      VariousUtils.sendMessage(source, SELECT_ANOTHER_LOCATION);
+    if (SpinnyChest.isPlaceOccupied(plugin, loc)) {
+      Message.ALREADY_OCCUPIED.send(source);
+      Message.SELECT_ANOTHER_LOCATION.send(source);
 
     } else {
-      final SpinnyChest sc = new SpinnyChest(loc, shouldDisappear);
+      final SpinnyChest sc = new SpinnyChest(plugin, loc, shouldDisappear);
       plugin.spinnyChests.put(sc.getUUID(), sc);
-      VariousUtils.sendMessage(source, CHEST_PLACED);
+      Message.CHEST_PLACED.send(source);
 
       final ConfigurationSection cs = plugin.chestsYaml.createSection(sc.getUUID().toString());
       cs.set(FancyEChests.YAML_HIDDEN_UNTIL, 0L);

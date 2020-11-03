@@ -1,6 +1,7 @@
 package me.fefo.fancyechests;
 
 import me.fefo.facilites.SelfRegisteringListener;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
@@ -16,13 +17,17 @@ public class PlayerLoginListener extends SelfRegisteringListener {
     this.plugin = plugin;
   }
 
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  public void onPlayerLogin(final AsyncPlayerPreLoginEvent event) {
-    plugin.playerInventories.put(event.getUniqueId(), new FecHolder(event.getUniqueId()));
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onPlayerPreLogin(final AsyncPlayerPreLoginEvent event) {
+    if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+      plugin.playerInventories.put(event.getUniqueId(), new FecHolder(plugin, event.getUniqueId()));
+    }
   }
 
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  @EventHandler
   public void onPlayerJoin(final PlayerJoinEvent event) {
-    plugin.playerInventories.get(event.getPlayer().getUniqueId()).createInventory(event.getPlayer());
+    final Player player = event.getPlayer();
+    final FecHolder holder = plugin.playerInventories.get(player.getUniqueId());
+    holder.createInventory(player);
   }
 }

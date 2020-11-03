@@ -15,14 +15,9 @@ import java.util.UUID;
 
 public final class SpinnyChest {
 
-  private static FancyEChests plugin;
   private static final ItemStack ITEM_STACK = new ItemStack(Material.ENDER_CHEST);
 
-  static void setPlugin(final FancyEChests plugin) {
-    SpinnyChest.plugin = plugin;
-  }
-
-  public static boolean isPlaceOccupied(@NotNull final Location location) {
+  public static boolean isPlaceOccupied(final FancyEChests plugin, @NotNull final Location location) {
     final Location loc = location.clone();
     loc.setX(loc.getBlockX() + .5);
     loc.setY(loc.getBlockY() - 1.0);
@@ -37,13 +32,16 @@ public final class SpinnyChest {
     return false;
   }
 
+  private final FancyEChests plugin;
   private final UUID uuid;
   private final ArmorStand as;
   private final boolean shouldDisappear;
   private boolean isBeingUsed = false;
   private long hiddenUntil = 0L;
 
-  public SpinnyChest(@NotNull final Location loc, final boolean shouldDisappear) {
+  public SpinnyChest(final FancyEChests plugin, @NotNull final Location loc, final boolean shouldDisappear) {
+    this.plugin = plugin;
+
     loc.setX(loc.getBlockX() + 0.5);
     loc.setY(loc.getBlockY() - 1.0);
     loc.setZ(loc.getBlockZ() + 0.5);
@@ -68,7 +66,8 @@ public final class SpinnyChest {
     this.shouldDisappear = shouldDisappear;
   }
 
-  public SpinnyChest(@NotNull final UUID uuid, final long hiddenUntil, final boolean shouldDisappear) {
+  public SpinnyChest(final FancyEChests plugin, @NotNull final UUID uuid, final long hiddenUntil, final boolean shouldDisappear) {
+    this.plugin = plugin;
     as = (ArmorStand) Bukkit.getEntity(uuid);
     this.uuid = uuid;
     this.hiddenUntil = hiddenUntil;

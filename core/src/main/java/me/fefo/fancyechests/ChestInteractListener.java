@@ -7,14 +7,12 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.UUID;
 
 public final class ChestInteractListener extends SelfRegisteringListener {
+
   private final FancyEChests plugin;
 
   public ChestInteractListener(final FancyEChests plugin) {
@@ -36,29 +34,17 @@ public final class ChestInteractListener extends SelfRegisteringListener {
           }
 
           final SpinnyChest sc = plugin.spinnyChests.get(uuid);
-          if (sc.getHiddenUntil() == 0L
-              && !sc.isBeingUsed()) {
-
+          if (sc.getHiddenUntil() == 0L && !sc.isBeingUsed()) {
             sc.updateUsage();
 
             final Player player = e.getPlayer();
             final FecHolder holder = plugin.playerInventories.get(player.getUniqueId());
 
-            if (holder.requiresMigration()) {
-              holder.getInventory().clear();
-              holder.getInventory().addItem(Arrays.stream(player.getEnderChest().getStorageContents())
-                                                  .filter(Objects::nonNull)
-                                                  .toArray(ItemStack[]::new));
-              player.getEnderChest().clear();
-              holder.migrationCompleted();
-            }
-
             player.openInventory(holder.getInventory());
             plugin.playersUsingChest.put(player.getUniqueId(), uuid);
 
             e.getPlayer().getWorld().playSound(e.getPlayer().getLocation(),
-                                               FancyEChests.sound,
-                                               SoundCategory.BLOCKS,
+                                               FancyEChests.SOUND, SoundCategory.BLOCKS,
                                                1.0f, 1.0f);
           }
         }

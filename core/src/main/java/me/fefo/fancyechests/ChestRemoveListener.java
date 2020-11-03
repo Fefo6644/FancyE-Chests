@@ -1,7 +1,6 @@
 package me.fefo.fancyechests;
 
 import me.fefo.facilites.SelfRegisteringListener;
-import me.fefo.facilites.VariousUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -13,6 +12,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 public final class ChestRemoveListener extends SelfRegisteringListener {
+
   private final FancyEChests plugin;
 
   public ChestRemoveListener(final FancyEChests plugin) {
@@ -47,7 +47,7 @@ public final class ChestRemoveListener extends SelfRegisteringListener {
           ex.printStackTrace();
         }
 
-        VariousUtils.sendMessage(damager, CommanderKeen.CHEST_REMOVED);
+        Message.CHEST_REMOVED.send(damager);
       }
     }
   }

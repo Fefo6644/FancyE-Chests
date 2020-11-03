@@ -25,7 +25,7 @@ public final class CommandRegisteredListener<S extends BukkitBrigadierCommandSou
       return;
     }
 
-    event.setLiteral(CommandProvider.of(this, this,
+    event.setLiteral(CommandProvider.of(this, this, this,
                                         this, this,
                                         this, this,
                                         this, event.getCommandLabel())
