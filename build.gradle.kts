@@ -6,7 +6,7 @@ plugins {
 defaultTasks("clean", "shadowJar")
 
 project.group = "com.github.fefo"
-project.version = "3.0-SNAPSHOT"
+project.version = "3.0"
 
 java {
     toolchain {
