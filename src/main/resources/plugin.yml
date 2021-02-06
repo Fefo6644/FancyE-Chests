@@ -1,0 +1,12 @@
+{
+  "name": "FancyE-Chests",
+  "authors": [
+    "Fefo"
+  ],
+  "version": "${pluginVersion}",
+  "main": "com.github.fefo.fancyechests.FancyEChestsPlugin",
+  "load": "POSTWORLD",
+  "softdepend": [
+    "Vault"
+  ]
+}
