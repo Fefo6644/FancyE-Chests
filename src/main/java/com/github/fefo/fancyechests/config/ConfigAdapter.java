@@ -1,3 +1,21 @@
+//
+// FancyE-Chests - Provide your players with isolated, fancy spinning ender chests.
+// Copyright (C) 2021  Fefo6644 <federico.lopez.1999@outlook.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
 package com.github.fefo.fancyechests.config;
 
 import com.github.fefo.fancyechests.FancyEChestsPlugin;
@@ -31,7 +49,7 @@ public abstract class ConfigAdapter {
   protected final Path configPath;
   protected final Path dataFolder;
   protected final String separator = ".";
-  protected final String separatorPattern = Pattern.quote(this.separator);
+  protected final Pattern separatorPattern = Pattern.compile(this.separator, Pattern.LITERAL);
   protected final Map<String, Object> rootRaw = new LinkedHashMap<>();
   protected final Map<String, Object> unwind = new LinkedHashMap<>();
 
@@ -136,7 +154,7 @@ public abstract class ConfigAdapter {
     Preconditions.checkState(this.initialized,
                              "Cannot query config values at this stage; " +
                              "config not initialized yet");
-    final String[] pathComponents = path.split(this.separatorPattern);
+    final String[] pathComponents = this.separatorPattern.split(path);
 
     if (pathComponents.length == 1) {
       return map.get(path);

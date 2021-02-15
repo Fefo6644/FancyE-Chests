@@ -1,3 +1,21 @@
+//
+// FancyE-Chests - Provide your players with isolated, fancy spinning ender chests.
+// Copyright (C) 2021  Fefo6644 <federico.lopez.1999@outlook.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
 package com.github.fefo.fancyechests.model.chest;
 
 import com.github.fefo.fancyechests.config.ConfigAdapter;
@@ -19,7 +37,7 @@ public class SpinningChest {
   private final UUID uuid;
   private transient final Location location;
   private final boolean shouldDisappear;
-  private long hiddenUntil = 0L;
+  private long hiddenUntil = Long.MIN_VALUE;
   private transient ConfigAdapter configAdapter;
   private transient ArmorStand stand;
   private transient boolean isBeingUsed = false;
@@ -82,26 +100,24 @@ public class SpinningChest {
     this.hiddenUntil = hiddenUntil;
     if (hiddenUntil <= System.currentTimeMillis()) {
       this.isBeingUsed = false;
-      if (this.stand != null) {
+      if (this.stand != null && this.stand.getEquipment().getHelmet() == null) {
         this.stand.getEquipment().setHelmet(ENDER_CHEST_ITEM);
       }
       return;
     }
 
-    if (this.stand == null) {
-      return;
+    if (this.stand != null) {
+      this.stand.getEquipment().setHelmet(null);
+      this.stand.getWorld()
+                .spawnParticle(this.configAdapter.get(ConfigKeys.PARTICLE_TYPE),
+                               this.location,
+                               this.configAdapter.get(ConfigKeys.PARTICLE_COUNT).intValue(),
+                               0.0, 0.0, 0.0,
+                               this.configAdapter.get(ConfigKeys.PARTICLE_SPEED).doubleValue());
     }
-    this.stand.getEquipment().setHelmet(null);
-    this.stand.getWorld()
-              .spawnParticle(this.configAdapter.get(ConfigKeys.PARTICLE_TYPE),
-                             this.location,
-                             this.configAdapter.get(ConfigKeys.PARTICLE_COUNT).intValue(),
-                             0.0, 0.0, 0.0,
-                             this.configAdapter.get(ConfigKeys.PARTICLE_SPEED).doubleValue());
   }
 
-  @NotNull
-  public final UUID getUuid() {
+  public @NotNull UUID getUuid() {
     return this.uuid;
   }
 

@@ -1,3 +1,21 @@
+//
+// FancyE-Chests - Provide your players with isolated, fancy spinning ender chests.
+// Copyright (C) 2021  Fefo6644 <federico.lopez.1999@outlook.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
 package com.github.fefo.fancyechests;
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
@@ -38,7 +56,6 @@ import java.util.stream.Collectors;
 public final class FecCommand extends Command implements Listener {
 
   private static final Joiner OR_JOINER = Joiner.on('|');
-  private static final UUID ZERO = new UUID(0L, 0L);
 
   private final FancyEChestsPlugin plugin;
   private final SubjectFactory subjectFactory;
@@ -108,7 +125,7 @@ public final class FecCommand extends Command implements Listener {
     final PlayerMessagingSubject subject = context.getSource();
     final UUID nearestChest = getNearestChest(subject.getPlayer());
 
-    if (nearestChest == ZERO) {
+    if (nearestChest == null) {
       Message.COULDNT_FIND_NEAREST.sendMessage(subject);
     } else {
       subject.getPlayer().teleport(this.plugin.getChestMap().get(nearestChest).getLocation());
@@ -149,7 +166,7 @@ public final class FecCommand extends Command implements Listener {
     final PlayerMessagingSubject subject = context.getSource();
     final UUID nearestChest = getNearestChest(subject.getPlayer());
 
-    if (nearestChest == ZERO) {
+    if (nearestChest == null) {
       Message.COULDNT_FIND_NEAREST.sendMessage(subject);
       return 1;
     }
@@ -179,8 +196,7 @@ public final class FecCommand extends Command implements Listener {
     return 1;
   }
 
-  private void createEnderChest(final PlayerMessagingSubject subject,
-                                final boolean shouldDisappear) {
+  private void createEnderChest(final PlayerMessagingSubject subject, final boolean shouldDisappear) {
     final Player player = subject.getPlayer();
     final Location location = player.getLocation().clone();
 
@@ -210,7 +226,7 @@ public final class FecCommand extends Command implements Listener {
                  .map(this.plugin.getChestMap()::get)
                  .min(ChestsSorter.from(player.getLocation()))
                  .map(SpinningChest::getUuid)
-                 .orElse(ZERO);
+                 .orElse(null);
   }
 
   @Override

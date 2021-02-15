@@ -1,3 +1,21 @@
+//
+// FancyE-Chests - Provide your players with isolated, fancy spinning ender chests.
+// Copyright (C) 2021  Fefo6644 <federico.lopez.1999@outlook.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
 package com.github.fefo.fancyechests.model.chest;
 
 import com.github.fefo.fancyechests.FancyEChestsPlugin;
@@ -9,7 +27,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.jetbrains.annotations.NotNull;
@@ -31,8 +48,6 @@ import java.util.stream.Collectors;
 
 public final class ChestMap implements Map<UUID, SpinningChest> {
 
-  public static final Sound ENDERCHEST_OPEN_SOUND;
-  public static final Sound ENDERCHEST_CLOSE_SOUND;
   private static final Gson GSON =
       new GsonBuilder()
           .registerTypeAdapter(World.class, WorldAdapter.ADAPTER)
@@ -41,21 +56,6 @@ public final class ChestMap implements Map<UUID, SpinningChest> {
           .setPrettyPrinting()
           .create();
   private static final Type CHESTS_TYPE = new TypeToken<Set<SpinningChest>>() { }.getType();
-
-  static {
-    Sound open, close;
-
-    try {
-      open = Sound.valueOf("BLOCK_ENDERCHEST_OPEN");
-      close = Sound.valueOf("BLOCK_ENDERCHEST_CLOSE");
-    } catch (final IllegalArgumentException exception) {
-      open = Sound.valueOf("BLOCK_ENDER_CHEST_OPEN");
-      close = Sound.valueOf("BLOCK_ENDER_CHEST_CLOSE");
-    }
-
-    ENDERCHEST_OPEN_SOUND = open;
-    ENDERCHEST_CLOSE_SOUND = close;
-  }
 
   private final ConfigAdapter configAdapter;
   private final Path chestsFile;
@@ -81,11 +81,15 @@ public final class ChestMap implements Map<UUID, SpinningChest> {
     this.chests.clear();
     try (final BufferedReader reader = Files.newBufferedReader(this.chestsFile)) {
       final Set<SpinningChest> loaded = GSON.fromJson(reader, CHESTS_TYPE);
-      this.chests.putAll(loaded.stream()
-                               .peek(chest -> chest.setConfigAdapter(this.configAdapter))
-                               .peek(SpinningChest::summon)
-                               .collect(Collectors.toMap(SpinningChest::getUuid,
-                                                         Function.identity())));
+      if (loaded != null) {
+        this.chests.putAll(loaded.stream()
+                                 .peek(chest -> chest.setConfigAdapter(this.configAdapter))
+                                 .peek(SpinningChest::summon)
+                                 .collect(Collectors.toMap(SpinningChest::getUuid,
+                                                           Function.identity())));
+      } else {
+        FancyEChestsPlugin.LOGGER.warn("There was an error while reading " + this.chestsFile);
+      }
     }
   }
 
