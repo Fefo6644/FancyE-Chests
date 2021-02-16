@@ -30,7 +30,6 @@ import com.github.fefo.fancyechests.message.MessagingSubject;
 import com.github.fefo.fancyechests.message.PlayerMessagingSubject;
 import com.github.fefo.fancyechests.message.SubjectFactory;
 import com.github.fefo.fancyechests.model.chest.SpinningChest;
-import com.github.fefo.fancyechests.util.CommandMapHelper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
@@ -70,13 +69,13 @@ public final class FecCommand extends Command implements Listener {
   private final Predicate<? super String> commandPredicate;
 
   public FecCommand(final FancyEChestsPlugin plugin) {
-    super("fancyechests", "", "/fancyechests help", ImmutableList.of("fec"));
+    super("fancyechests", "Command used to place, locate and remove rotating ender chests", "/fancyechests help", ImmutableList.of("fec"));
     this.plugin = plugin;
     this.subjectFactory = plugin.getSubjectFactory();
 
     setPermission("fancyechests.use");
     setPermissionMessage(Message.NO_PERMISSION.legacy("run this command"));
-    CommandMapHelper.getCommandMap().register("fancyechests", this);
+    Bukkit.getCommandMap().register("fancyechests", this);
 
     this.commandPredicate
         = Pattern.compile("^/?(?:fancyechests:)?"
@@ -112,16 +111,16 @@ public final class FecCommand extends Command implements Listener {
   }
 
   private void usage(final MessagingSubject subject) {
-    Message.PLUGIN_INFO.sendMessage(subject, this.plugin);
+    Message.PLUGIN_INFO.send(subject, this.plugin);
   }
 
   private int help(final CommandContext<PlayerMessagingSubject> context) {
     final PlayerMessagingSubject subject = context.getSource();
     usage(subject);
 
-    Message.USAGE_TITLE.sendMessage(subject);
+    Message.USAGE_TITLE.send(subject);
     for (final String usage : this.dispatcher.getAllUsage(this.rootNode, subject, true)) {
-      Message.USAGE_COMMAND.sendMessage(subject, usage);
+      Message.USAGE_COMMAND.send(subject, usage);
     }
 
     return 1;
@@ -132,7 +131,7 @@ public final class FecCommand extends Command implements Listener {
     final UUID nearestChest = getNearestChest(subject.getPlayer());
 
     if (nearestChest == null) {
-      Message.COULDNT_FIND_NEAREST.sendMessage(subject);
+      Message.COULDNT_FIND_NEAREST.send(subject);
     } else {
       subject.getPlayer().teleport(this.plugin.getChestMap().get(nearestChest).getLocation());
     }
@@ -142,9 +141,9 @@ public final class FecCommand extends Command implements Listener {
 
   private int reload(final CommandContext<PlayerMessagingSubject> context) {
     if (this.plugin.reload()) {
-      Message.FILES_RELOADED.sendMessage(context.getSource());
+      Message.FILES_RELOADED.send(context.getSource());
     } else {
-      Message.RELOADING_ERROR.sendMessage(context.getSource());
+      Message.RELOADING_ERROR.send(context.getSource());
     }
     return 1;
   }
@@ -153,18 +152,18 @@ public final class FecCommand extends Command implements Listener {
     final PlayerMessagingSubject subject = context.getSource();
 
     if (this.plugin.getHolderManager().removedChestCompleted(subject.getPlayer().getUniqueId())) {
-      Message.ACTION_CANCELLED.sendMessage(subject);
+      Message.ACTION_CANCELLED.send(subject);
       return 1;
     }
 
     if (this.plugin.getChestMap().isEmpty()) {
-      Message.NO_LOADED_CHESTS.sendMessage(subject);
+      Message.NO_LOADED_CHESTS.send(subject);
       return 1;
     }
 
     this.plugin.getHolderManager().startedRemovingChest(subject.getPlayer().getUniqueId());
-    Message.HIT_TO_REMOVE.sendMessage(subject);
-    Message.RUN_TO_CANCEL.sendMessage(subject);
+    Message.HIT_TO_REMOVE.send(subject);
+    Message.RUN_TO_CANCEL.send(subject);
     return 1;
   }
 
@@ -173,7 +172,7 @@ public final class FecCommand extends Command implements Listener {
     final UUID nearestChest = getNearestChest(subject.getPlayer());
 
     if (nearestChest == null) {
-      Message.COULDNT_FIND_NEAREST.sendMessage(subject);
+      Message.COULDNT_FIND_NEAREST.send(subject);
       return 1;
     }
 
@@ -186,7 +185,7 @@ public final class FecCommand extends Command implements Listener {
       exception.printStackTrace();
     }
 
-    Message.CHEST_REMOVED_AT.sendMessage(subject, subject.getName(), chestLocation);
+    Message.CHEST_REMOVED_AT.send(subject, subject.getName(), chestLocation);
     return 1;
   }
 
@@ -207,15 +206,15 @@ public final class FecCommand extends Command implements Listener {
     final Location location = player.getLocation().clone();
 
     if (this.plugin.getChestMap().isPlaceOccupied(location)) {
-      Message.ALREADY_OCCUPIED.sendMessage(subject);
-      Message.SELECT_ANOTHER_LOCATION.sendMessage(subject);
+      Message.ALREADY_OCCUPIED.send(subject);
+      Message.SELECT_ANOTHER_LOCATION.send(subject);
       return;
     }
 
     final SpinningChest chest = new SpinningChest(this.plugin.getConfigAdapter(),
                                                   location, shouldDisappear);
     this.plugin.getChestMap().put(chest.getUuid(), chest);
-    Message.CHEST_PLACED.sendMessage(subject);
+    Message.CHEST_PLACED.send(subject);
 
     try {
       this.plugin.getChestMap().save();
@@ -243,7 +242,7 @@ public final class FecCommand extends Command implements Listener {
     final String cmd = getName() + ' ' + String.join(" ", args);
 
     if (!subject.isPlayer()) {
-      Message.PLAYERS_ONLY.sendMessage(subject);
+      Message.PLAYERS_ONLY.send(subject);
       return true;
     }
 
@@ -251,13 +250,13 @@ public final class FecCommand extends Command implements Listener {
         this.dispatcher.parse(cmd.trim(), subject.asPlayerSubject());
 
     if (result.getContext().getNodes().isEmpty()) {
-      Message.NO_PERMISSION.sendMessage(subject, "run this command");
+      Message.NO_PERMISSION.send(subject, "run this command");
       return true;
     }
 
     if (!result.getExceptions().isEmpty()) {
       result.getExceptions().values().forEach(exception -> {
-        Message.COMMAND_EXCEPTION.sendMessage(subject, exception.getMessage());
+        Message.COMMAND_EXCEPTION.send(subject, exception.getMessage());
       });
       return true;
     }

@@ -75,7 +75,7 @@ public final class ChestRemoveListener implements Listener {
         exception.printStackTrace();
       }
 
-      Message.CHEST_REMOVED.sendMessage(this.subjectFactory.player((Player) damager));
+      Message.CHEST_REMOVED.send(this.subjectFactory.player((Player) damager));
     }
   }
 }

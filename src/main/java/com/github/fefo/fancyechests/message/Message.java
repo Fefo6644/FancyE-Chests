@@ -175,7 +175,7 @@ public interface Message {
   @FunctionalInterface
   interface Args0 {
 
-    default void sendMessage(final Audience audience) {
+    default void send(final Audience audience) {
       audience.sendMessage(build());
     }
 
@@ -189,7 +189,7 @@ public interface Message {
   @FunctionalInterface
   interface Args1<T> {
 
-    default void sendMessage(final Audience audience, final T t) {
+    default void send(final Audience audience, final T t) {
       audience.sendMessage(build(t));
     }
 
@@ -203,7 +203,7 @@ public interface Message {
   @FunctionalInterface
   interface Args2<T, S> {
 
-    default void sendMessage(final Audience audience, final T t, final S s) {
+    default void send(final Audience audience, final T t, final S s) {
       audience.sendMessage(build(t, s));
     }
 
@@ -217,7 +217,7 @@ public interface Message {
   @FunctionalInterface
   interface Args3<T, S, R> {
 
-    default void sendMessage(final Audience audience, final T t, final S s, final R r) {
+    default void send(final Audience audience, final T t, final S s, final R r) {
       audience.sendMessage(build(t, s, r));
     }
 
@@ -231,7 +231,7 @@ public interface Message {
   @FunctionalInterface
   interface Args4<T, S, R, Q> {
 
-    default void sendMessage(final Audience audience, final T t, final S s, final R r, final Q q) {
+    default void send(final Audience audience, final T t, final S s, final R r, final Q q) {
       audience.sendMessage(build(t, s, r, q));
     }
 
@@ -245,7 +245,7 @@ public interface Message {
   @FunctionalInterface
   interface Args5<T, S, R, Q, P> {
 
-    default void sendMessage(
+    default void send(
         final Audience audience, final T t, final S s, final R r, final Q q, final P p) {
       audience.sendMessage(build(t, s, r, q, p));
     }

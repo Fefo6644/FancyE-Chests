@@ -33,8 +33,7 @@ public final class ConfigKeys {
 
   public static final DoubleConfigKey RPM = new DoubleConfigKey("rpm", 45.0, true);
 
-  public static final IntegerConfigKey SECONDS_HIDDEN =
-      new IntegerConfigKey("secondsUntilReappearance", 60, true);
+  public static final IntegerConfigKey SECONDS_HIDDEN = new IntegerConfigKey("secondsHidden", 60, true);
 
   public static final ConfigKey<Particle> PARTICLE_TYPE =
       new ConfigKey<Particle>("particleType", Particle.END_ROD, true) {
@@ -50,11 +49,9 @@ public final class ConfigKeys {
         }
       };
 
-  public static final IntegerConfigKey PARTICLE_COUNT =
-      new IntegerConfigKey("particleCount", 100, true);
+  public static final IntegerConfigKey PARTICLE_COUNT = new IntegerConfigKey("particleCount", 100, true);
 
-  public static final DoubleConfigKey PARTICLE_SPEED =
-      new DoubleConfigKey("particleSpeed", 0.1, true);
+  public static final DoubleConfigKey PARTICLE_SPEED = new DoubleConfigKey("particleSpeed", 0.1, true);
 
   private ConfigKeys() {
     throw new UnsupportedOperationException();

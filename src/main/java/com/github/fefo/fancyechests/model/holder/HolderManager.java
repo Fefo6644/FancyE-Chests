@@ -89,8 +89,7 @@ public final class HolderManager {
     final YamlConfiguration configuration = new YamlConfiguration();
     this.loadedYamls.put(uuid, configuration);
     if (Files.exists(this.playerdata.resolve(uuid + ".yml"))) {
-      try (final BufferedReader reader =
-               Files.newBufferedReader(this.playerdata.resolve(uuid + ".yml"))) {
+      try (final BufferedReader reader = Files.newBufferedReader(this.playerdata.resolve(uuid + ".yml"))) {
         configuration.load(reader);
       } catch (final InvalidConfigurationException | IOException exception) {
         exception.printStackTrace();
@@ -104,15 +103,14 @@ public final class HolderManager {
     final FecHolder holder = this.holders.get(player.getUniqueId());
     Preconditions.checkState(holder != null, "holder not created");
     final YamlConfiguration configuration = this.loadedYamls.remove(player.getUniqueId());
-    final Inventory chest = Bukkit.createInventory(player, getMaxSlots(player), "Ender Chest");
+    final Inventory chest = Bukkit.createInventory(player, 9 * getRows(player), "Ender Chest");
     holder.setInventory(chest);
 
     if (configuration == null) {
       return;
     }
 
-    final List<ItemStack> items =
-        (List<ItemStack>) configuration.getList("items", new ArrayList<>());
+    final List<ItemStack> items = (List<ItemStack>) configuration.getList("items", new ArrayList<>());
     final Map<Integer, ItemStack> remaining = chest.addItem(items.toArray(new ItemStack[0]));
     if (!remaining.isEmpty()) {
       FancyEChestsPlugin.LOGGER.warn(String.format("Could not add %d items to %s's FEC",
@@ -206,16 +204,15 @@ public final class HolderManager {
     return this.playersUsingChests.remove(uuid);
   }
 
-  private int getMaxSlots(final Player player) {
+  private int getRows(final Player player) {
     if (this.meta == null) {
       // fallback if Vault isn't installed
-      return 27;
+      return 3;
     }
 
-    int slots = this.meta.getPlayerInfoInteger(player, "fancyechests.slots", 27);
-    slots = Math.max(9, Math.min(slots, 54)); // clamp
-    slots = (int) (Math.ceil((double) slots / 9.0) * 9.0);  // ceil to nearest multiple of 9
+    int rows = this.meta.getPlayerInfoInteger(player, "fancyechests.rows", 3);
+    rows = Math.max(1, Math.min(rows, 6)); // clamp
 
-    return slots;
+    return rows;
   }
 }

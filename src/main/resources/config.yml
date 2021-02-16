@@ -2,7 +2,7 @@
 rpm: 45.0
 
 # Time in seconds to wait before the ender chest reappears.
-secondsUntilReappearance: 60
+secondsHidden: 60
 
 # Type of particle to show when closing the ender chest.
 # Check these lists for possible values:
