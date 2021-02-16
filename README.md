@@ -14,6 +14,7 @@ This project was designed for 1.12.2 Paper (a.k.a. PaperSpigot) servers, but it 
 
 
 ## Commands & Permissions
+
 All listed sub-commands fall under the `/fancyenderchests`/`/fec` name/label/alias and require the `fancyechests.use` permission.
 * `/fec help` - Prints some plugin info and the list of available commands.
 * `/fec nearest` - Teleports the player to the nearest (loaded) rotating ender chest in that world.
@@ -40,11 +41,13 @@ cd fancyechests
 ./gradlew
 ```
 
+
 ## Contributing
 
 Contributions are way more than welcome! Everything will be taken into consideration and hopefully discussed.
 
 This project follows [Google Java code style](https://google.github.io/styleguide/javaguide.html). Whilst it isn't strict (e.g. line width isn't always 100 chars/columns wide), try to follow the general layout of the file you're editing :)
+
 
 ## Attributions
 
