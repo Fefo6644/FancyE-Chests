@@ -42,21 +42,19 @@ import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 public final class FancyEChestsPlugin extends JavaPlugin {
 
-  public static final Logger LOGGER = LoggerFactory.getLogger(FancyEChestsPlugin.class);
-
+  private final Logger logger = getLogger();
   private final Path dataFolder = getDataFolder().toPath();
   private final ConfigAdapter configAdapter = new YamlConfigAdapter(this, this.dataFolder);
   private final ChestMap chestMap = new ChestMap(this);
-  private final HolderManager holderManager = new HolderManager(this.dataFolder);
+  private final HolderManager holderManager = new HolderManager(this, this.dataFolder);
   private final TaskScheduler taskScheduler = new TaskScheduler(this);
   private final ChunksListener chunksListener = new ChunksListener(this);
 
@@ -106,7 +104,8 @@ public final class FancyEChestsPlugin extends JavaPlugin {
             .forEach(this.holderManager::createInventory);
       return true;
     } catch (final IOException exception) {
-      LOGGER.error("There was an error while reloading the config/data", exception);
+      this.logger.severe("There was an error while reloading the config/data");
+      exception.printStackTrace();
       return false;
     }
   }
@@ -168,10 +167,5 @@ public final class FancyEChestsPlugin extends JavaPlugin {
     this.holderManager.unloadAllHolders();
     this.chestMap.clear();
     this.taskScheduler.shutdown();
-  }
-
-  @Override
-  public Logger getSLF4JLogger() {
-    return LOGGER;
   }
 }

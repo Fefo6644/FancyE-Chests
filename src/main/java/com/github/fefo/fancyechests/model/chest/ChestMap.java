@@ -35,6 +35,8 @@ import com.google.gson.reflect.TypeToken;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,11 +65,13 @@ public final class ChestMap implements Map<UUID, SpinningChest> {
           .create();
   private static final Type CHESTS_TYPE = new TypeToken<Set<SpinningChest>>() { }.getType();
 
+  private final JavaPlugin plugin;
   private final ConfigAdapter configAdapter;
   private final Path chestsFile;
   private final Map<UUID, SpinningChest> chests = new HashMap<>();
 
   public ChestMap(final FancyEChestsPlugin plugin) {
+    this.plugin = plugin;
     this.configAdapter = plugin.getConfigAdapter();
     this.chestsFile = plugin.getDataFolderPath().resolve("enderchests.json");
   }
@@ -94,7 +98,7 @@ public final class ChestMap implements Map<UUID, SpinningChest> {
                                  .collect(Collectors.toMap(SpinningChest::getUuid,
                                                            Function.identity())));
       } else {
-        FancyEChestsPlugin.LOGGER.warn("There was an error while reading " + this.chestsFile);
+        this.plugin.getLogger().warning("There was an error while reading " + this.chestsFile);
       }
     }
   }
@@ -106,14 +110,15 @@ public final class ChestMap implements Map<UUID, SpinningChest> {
   }
 
   public boolean isPlaceOccupied(Location location) {
-    location = location.toBlockLocation();
+    location = location.getBlock().getLocation().clone();
     location.setX(location.getX() + 0.5);
     location.setY(location.getY() - 1.0);
     location.setZ(location.getZ() + 0.5);
     return location.getWorld()
-                   .getNearbyEntitiesByType(ArmorStand.class, location, 0.0625, 0.0625, 0.0625)
+                   .getNearbyEntities(location, 0.0625, 0.0625, 0.0625)
                    .stream()
-                   .map(ArmorStand::getUniqueId)
+                   .filter(ArmorStand.class::isInstance)
+                   .map(Entity::getUniqueId)
                    .anyMatch(this.chests::containsKey);
   }
 

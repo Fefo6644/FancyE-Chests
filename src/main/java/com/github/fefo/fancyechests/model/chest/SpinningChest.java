@@ -48,10 +48,9 @@ public class SpinningChest {
   private transient ArmorStand stand;
   private transient boolean isBeingUsed = false;
 
-  public SpinningChest(final ConfigAdapter configAdapter, Location location,
-                       final boolean shouldDisappear) {
+  public SpinningChest(final ConfigAdapter configAdapter, Location location, final boolean shouldDisappear) {
     this.configAdapter = configAdapter;
-    location = location.toBlockLocation();
+    location = location.getBlock().getLocation().clone();
 
     location.setX(location.getX() + 0.5);
     location.setY(location.getY() - 1.0);

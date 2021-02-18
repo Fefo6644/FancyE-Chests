@@ -22,30 +22,33 @@
 // SOFTWARE.
 //
 
-package com.github.fefo.fancyechests.message;
+package com.github.fefo.fancyechests.util;
 
-import net.kyori.adventure.audience.Audience;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.bukkit.Bukkit;
+import org.bukkit.Server;
+import org.bukkit.command.CommandMap;
 
-public class PlayerMessagingSubject extends MessagingSubject {
+import java.lang.reflect.Method;
 
-  PlayerMessagingSubject(final @NotNull Audience audience, final @NotNull Player player) {
-    super(audience, player.getName(), player);
+public final class CommandMapHelper {
+
+  private static final Method GET_COMMAND_MAP_METHOD;
+
+  static {
+    try {
+      final Class<? extends Server> craftServerClass = Bukkit.getServer().getClass();
+      GET_COMMAND_MAP_METHOD = craftServerClass.getDeclaredMethod("getCommandMap");
+      GET_COMMAND_MAP_METHOD.setAccessible(true);
+    } catch (final ReflectiveOperationException exception) {
+      throw new RuntimeException(exception);
+    }
   }
 
-  @Override
-  public boolean isPlayer() {
-    return true;
-  }
-
-  @Override
-  public @NotNull PlayerMessagingSubject asPlayerSubject() {
-    return this;
-  }
-
-  public @Nullable Player getPlayer() {
-    return (Player) this.permissible.get();
+  public static CommandMap getCommandMap() {
+    try {
+      return (CommandMap) GET_COMMAND_MAP_METHOD.invoke(Bukkit.getServer());
+    } catch (final ReflectiveOperationException exception) {
+      throw new RuntimeException(exception);
+    }
   }
 }

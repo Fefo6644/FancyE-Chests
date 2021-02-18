@@ -177,14 +177,14 @@ public abstract class ConfigAdapter {
 
   private <T> T validate(final String key, final Object value, final Class<T> type) {
     if (value == null) {
-      this.plugin.getSLF4JLogger().warn(
+      this.plugin.getLogger().warning(
           String.format("No value for config key \"%s\" (expected to be of type %s)",
                         key, type.getSimpleName()));
       return null;
     }
 
     if (!type.isInstance(value)) {
-      this.plugin.getSLF4JLogger().warn(
+      this.plugin.getLogger().warning(
           String.format("Config key \"%s\" expected to be of type %s but got %s instead",
                         key, type, value.getClass()));
       return null;

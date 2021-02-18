@@ -10,7 +10,7 @@ This plugin allows you to place rotating ender chests (separate from their "real
 
 ___
 
-This project was designed for 1.12.2 Paper (a.k.a. PaperSpigot) servers, but it works on 1.13+ as well.
+This project was designed for Spigot 1.12.2 servers, but it works on 1.13+ as well.
 
 
 ## Commands & Permissions

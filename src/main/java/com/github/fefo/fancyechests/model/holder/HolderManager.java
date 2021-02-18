@@ -24,7 +24,6 @@
 
 package com.github.fefo.fancyechests.model.holder;
 
-import com.github.fefo.fancyechests.FancyEChestsPlugin;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import net.milkbowl.vault.chat.Chat;
@@ -35,6 +34,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,10 +57,12 @@ public final class HolderManager {
   private final Map<UUID, FecHolder> holders = new HashMap<>();
   private final Set<UUID> playersRemovingChests = new HashSet<>();
   private final Map<UUID, UUID> playersUsingChests = new HashMap<>();
+  private final JavaPlugin plugin;
   private final Path playerdata;
   private Chat meta = null;
 
-  public HolderManager(final Path dataFolder) {
+  public HolderManager(final JavaPlugin plugin, final Path dataFolder) {
+    this.plugin = plugin;
     this.playerdata = dataFolder.resolve("playerdata");
     try {
       Files.createDirectories(this.playerdata);
@@ -113,8 +115,8 @@ public final class HolderManager {
     final List<ItemStack> items = (List<ItemStack>) configuration.getList("items", new ArrayList<>());
     final Map<Integer, ItemStack> remaining = chest.addItem(items.toArray(new ItemStack[0]));
     if (!remaining.isEmpty()) {
-      FancyEChestsPlugin.LOGGER.warn(String.format("Could not add %d items to %s's FEC",
-                                                   remaining.size(), player.getName()));
+      this.plugin.getLogger().warning(String.format("Could not add %d items to %s's FEC",
+                                                    remaining.size(), player.getName()));
     }
   }
 

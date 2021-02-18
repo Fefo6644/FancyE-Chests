@@ -7,7 +7,7 @@ plugins {
 defaultTasks("clean", "licenseMain", "shadowJar")
 
 project.group = "com.github.fefo"
-project.version = "3.0.1"
+project.version = "3.0.2"
 
 java {
     toolchain {
@@ -68,7 +68,7 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
     implementation("com.mojang:brigadier:1.0.17")
-    implementation("net.kyori:adventure-api:4.4.0") {
+    implementation("net.kyori:adventure-api:4.5.0") {
         exclude(group = "org.checkerframework", module = "checker-qual")
         exclude(group = "org.jetbrains", module = "annotations")
     }

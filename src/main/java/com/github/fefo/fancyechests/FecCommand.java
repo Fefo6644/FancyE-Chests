@@ -30,6 +30,7 @@ import com.github.fefo.fancyechests.message.MessagingSubject;
 import com.github.fefo.fancyechests.message.PlayerMessagingSubject;
 import com.github.fefo.fancyechests.message.SubjectFactory;
 import com.github.fefo.fancyechests.model.chest.SpinningChest;
+import com.github.fefo.fancyechests.util.CommandMapHelper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
@@ -75,7 +76,7 @@ public final class FecCommand extends Command implements Listener {
 
     setPermission("fancyechests.use");
     setPermissionMessage(Message.NO_PERMISSION.legacy("run this command"));
-    Bukkit.getCommandMap().register("fancyechests", this);
+    CommandMapHelper.getCommandMap().register("fancyechests", this);
 
     this.commandPredicate
         = Pattern.compile("^/?(?:fancyechests:)?"
@@ -128,12 +129,16 @@ public final class FecCommand extends Command implements Listener {
 
   private int teleportNearest(final CommandContext<PlayerMessagingSubject> context) {
     final PlayerMessagingSubject subject = context.getSource();
-    final UUID nearestChest = getNearestChest(subject.getPlayer());
+    final Player player = subject.getPlayer();
+    if (player == null) {
+      return 0; //?
+    }
 
+    final UUID nearestChest = getNearestChest(player);
     if (nearestChest == null) {
       Message.COULDNT_FIND_NEAREST.send(subject);
     } else {
-      subject.getPlayer().teleport(this.plugin.getChestMap().get(nearestChest).getLocation());
+      player.teleport(this.plugin.getChestMap().get(nearestChest).getLocation());
     }
 
     return 1;
@@ -150,8 +155,12 @@ public final class FecCommand extends Command implements Listener {
 
   private int remove(final CommandContext<PlayerMessagingSubject> context) {
     final PlayerMessagingSubject subject = context.getSource();
+    final Player player = subject.getPlayer();
+    if (player == null) {
+      return 0; //?
+    }
 
-    if (this.plugin.getHolderManager().removedChestCompleted(subject.getPlayer().getUniqueId())) {
+    if (this.plugin.getHolderManager().removedChestCompleted(player.getUniqueId())) {
       Message.ACTION_CANCELLED.send(subject);
       return 1;
     }
@@ -161,7 +170,7 @@ public final class FecCommand extends Command implements Listener {
       return 1;
     }
 
-    this.plugin.getHolderManager().startedRemovingChest(subject.getPlayer().getUniqueId());
+    this.plugin.getHolderManager().startedRemovingChest(player.getUniqueId());
     Message.HIT_TO_REMOVE.send(subject);
     Message.RUN_TO_CANCEL.send(subject);
     return 1;
@@ -169,8 +178,12 @@ public final class FecCommand extends Command implements Listener {
 
   private int removeNearest(final CommandContext<PlayerMessagingSubject> context) {
     final PlayerMessagingSubject subject = context.getSource();
-    final UUID nearestChest = getNearestChest(subject.getPlayer());
+    final Player player = subject.getPlayer();
+    if (player == null) {
+      return 0; //?
+    }
 
+    final UUID nearestChest = getNearestChest(player);
     if (nearestChest == null) {
       Message.COULDNT_FIND_NEAREST.send(subject);
       return 1;
@@ -181,7 +194,7 @@ public final class FecCommand extends Command implements Listener {
     try {
       this.plugin.getChestMap().save();
     } catch (final IOException exception) {
-      this.plugin.getSLF4JLogger().error("Could not save data file!", exception);
+      this.plugin.getLogger().severe("Could not save data file!");
       exception.printStackTrace();
     }
 
@@ -203,8 +216,11 @@ public final class FecCommand extends Command implements Listener {
 
   private void createEnderChest(final PlayerMessagingSubject subject, final boolean shouldDisappear) {
     final Player player = subject.getPlayer();
-    final Location location = player.getLocation().clone();
+    if (player == null) {
+      return; //?
+    }
 
+    final Location location = player.getLocation().clone();
     if (this.plugin.getChestMap().isPlaceOccupied(location)) {
       Message.ALREADY_OCCUPIED.send(subject);
       Message.SELECT_ANOTHER_LOCATION.send(subject);
@@ -219,7 +235,7 @@ public final class FecCommand extends Command implements Listener {
     try {
       this.plugin.getChestMap().save();
     } catch (final IOException exception) {
-      this.plugin.getSLF4JLogger().error("Could not save data file!", exception);
+      this.plugin.getLogger().severe("Could not save data file!");
       exception.printStackTrace();
     }
   }
