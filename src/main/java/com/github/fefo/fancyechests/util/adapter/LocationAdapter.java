@@ -72,6 +72,8 @@ public final class LocationAdapter extends TypeAdapter<Location> {
         case "world":
           if (in.peek() != JsonToken.NULL) {
             world = WorldAdapter.ADAPTER.read(in);
+          } else {
+            in.nextNull();
           }
           break;
 
