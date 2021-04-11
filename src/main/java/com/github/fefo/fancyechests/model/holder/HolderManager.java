@@ -59,7 +59,7 @@ public final class HolderManager {
   private final Map<UUID, UUID> playersUsingChests = new HashMap<>();
   private final JavaPlugin plugin;
   private final Path playerdata;
-  private Chat meta = null;
+  private Chat vaultMeta = null;
 
   public HolderManager(final JavaPlugin plugin, final Path dataFolder) {
     this.plugin = plugin;
@@ -71,9 +71,9 @@ public final class HolderManager {
     }
   }
 
-  public void setMeta(final Chat meta) {
-    Preconditions.checkState(this.meta == null, "Vault chat is already loaded");
-    this.meta = meta;
+  public void setVaultMeta(final Chat meta) {
+    Preconditions.checkState(this.vaultMeta == null, "Vault chat is already loaded");
+    this.vaultMeta = meta;
   }
 
   public FecHolder getHolder(final UUID uuid) {
@@ -164,7 +164,7 @@ public final class HolderManager {
   }
 
   public CompletableFuture<Void> saveAllHolders() {
-    return CompletableFuture.allOf(this.holders.keySet().stream()
+    return CompletableFuture.allOf(this.holders.keySet().parallelStream() // file IO, process in parallel
                                                .map(this::saveHolder)
                                                .toArray(CompletableFuture[]::new));
   }
@@ -207,12 +207,12 @@ public final class HolderManager {
   }
 
   private int getRows(final Player player) {
-    if (this.meta == null) {
+    if (this.vaultMeta == null) {
       // fallback if Vault isn't installed
       return 3;
     }
 
-    int rows = this.meta.getPlayerInfoInteger(player, "fancyechests.rows", 3);
+    int rows = this.vaultMeta.getPlayerInfoInteger(player, "fancyechests.rows", 3);
     rows = Math.max(1, Math.min(rows, 6)); // clamp
 
     return rows;

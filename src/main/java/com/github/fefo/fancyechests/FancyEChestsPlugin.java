@@ -41,22 +41,24 @@ import com.github.fefo.fancyechests.util.TaskScheduler;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.logging.Logger;
+import java.util.function.Consumer;
 
-public final class FancyEChestsPlugin extends JavaPlugin {
+public final class FancyEChestsPlugin extends JavaPlugin implements Listener {
 
-  private final Logger logger = getLogger();
   private final Path dataFolder = getDataFolder().toPath();
   private final ConfigAdapter configAdapter = new YamlConfigAdapter(this, this.dataFolder);
   private final ChestMap chestMap = new ChestMap(this);
   private final HolderManager holderManager = new HolderManager(this, this.dataFolder);
   private final TaskScheduler taskScheduler = new TaskScheduler(this);
-  private final ChunksListener chunksListener = new ChunksListener(this);
+  private final ChunksListener chunksListener = new ChunksListener(this); // why is this here again?
 
   private SubjectFactory subjectFactory = null;
 
@@ -104,7 +106,7 @@ public final class FancyEChestsPlugin extends JavaPlugin {
             .forEach(this.holderManager::createInventory);
       return true;
     } catch (final IOException exception) {
-      this.logger.severe("There was an error while reloading the config/data");
+      getLogger().severe("There was an error while reloading the config/data");
       exception.printStackTrace();
       return false;
     }
@@ -121,7 +123,7 @@ public final class FancyEChestsPlugin extends JavaPlugin {
     this.subjectFactory = new SubjectFactory(this);
 
     if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-      this.holderManager.setMeta(Bukkit.getServicesManager().load(Chat.class));
+      this.holderManager.setVaultMeta(Bukkit.getServicesManager().load(Chat.class));
     }
     // ye darn /reload
     Bukkit.getOnlinePlayers().stream()
@@ -130,15 +132,16 @@ public final class FancyEChestsPlugin extends JavaPlugin {
 
     new FecCommand(this);
 
-    Bukkit.getPluginManager().registerEvents(new ChestInteractListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new ChestCloseListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new ChestRemoveListener(this), this);
-    Bukkit.getPluginManager().registerEvents(this.chunksListener, this);
-    Bukkit.getPluginManager().registerEvents(new PlayerLoginListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(this), this);
+    new ChestInteractListener(this);
+    new ChestCloseListener(this);
+    new ChestRemoveListener(this);
+    this.chunksListener.register(this);
+    new PlayerLoginListener(this);
+    new PlayerQuitListener(this);
 
     // move async? contains file IO on main thread;
     // will probably do when moving holder IO async w/ locks
+    // process in parallel for now
     this.taskScheduler.sync(this.holderManager::saveAllHolders, 20L * 60L, 20L * 60L);
 
     this.taskScheduler.async(() -> {
@@ -167,5 +170,26 @@ public final class FancyEChestsPlugin extends JavaPlugin {
     this.holderManager.unloadAllHolders();
     this.chestMap.clear();
     this.taskScheduler.shutdown();
+  }
+
+  public <T extends Event> void registerListener(final Class<T> eventType, final Consumer<T> handler) {
+    registerListener(eventType, handler, EventPriority.NORMAL, true);
+  }
+
+  public <T extends Event> void registerListener(final Class<T> eventType, final Consumer<T> handler, final EventPriority priority) {
+    registerListener(eventType, handler, priority, true);
+  }
+
+  public <T extends Event> void registerListener(final Class<T> eventType, final Consumer<T> handler, final boolean callIfCancelled) {
+    registerListener(eventType, handler, EventPriority.NORMAL, callIfCancelled);
+  }
+
+  public <T extends Event> void registerListener(final Class<T> eventType, final Consumer<T> handler, final EventPriority priority, final boolean callIfCancelled) {
+    Bukkit.getPluginManager().registerEvent(eventType, this, priority,
+                                            (l, e) -> {
+                                              if (eventType.isInstance(e)) {
+                                                handler.accept(eventType.cast(e));
+                                              }
+                                            }, this, !callIfCancelled);
   }
 }

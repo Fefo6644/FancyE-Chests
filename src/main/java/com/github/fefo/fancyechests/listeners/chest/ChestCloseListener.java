@@ -30,14 +30,12 @@ import com.github.fefo.fancyechests.config.ConfigKeys;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import java.io.IOException;
 import java.util.UUID;
 
-public final class ChestCloseListener implements Listener {
+public final class ChestCloseListener {
 
   private final FancyEChestsPlugin plugin;
   private final ConfigAdapter config;
@@ -45,10 +43,10 @@ public final class ChestCloseListener implements Listener {
   public ChestCloseListener(final FancyEChestsPlugin plugin) {
     this.plugin = plugin;
     this.config = plugin.getConfigAdapter();
+    plugin.registerListener(InventoryCloseEvent.class, this::chestClose);
   }
 
-  @EventHandler
-  public void chestClose(final InventoryCloseEvent event) {
+  private void chestClose(final InventoryCloseEvent event) {
     final HumanEntity player = event.getPlayer();
     final UUID uuid = player.getUniqueId();
     final UUID chestUuid = this.plugin.getHolderManager().usedChestCompleted(uuid);

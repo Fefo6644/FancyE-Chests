@@ -28,13 +28,11 @@ import com.github.fefo.fancyechests.FancyEChestsPlugin;
 import com.github.fefo.fancyechests.model.chest.ChestMap;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
-public final class ChunksListener implements Listener {
+public final class ChunksListener {
 
   private final ChestMap chestMap;
 
@@ -42,8 +40,12 @@ public final class ChunksListener implements Listener {
     this.chestMap = plugin.getChestMap();
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onChunkLoad(final ChunkLoadEvent event) {
+  public void register(final FancyEChestsPlugin plugin) {
+    plugin.registerListener(ChunkLoadEvent.class, this::chunkLoad, EventPriority.MONITOR);
+    plugin.registerListener(ChunkUnloadEvent.class, this::chunkUnload, EventPriority.MONITOR);
+  }
+
+  private void chunkLoad(final ChunkLoadEvent event) {
     if (this.chestMap.isEmpty()) {
       return;
     }
@@ -59,8 +61,7 @@ public final class ChunksListener implements Listener {
     }
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onChunkUnload(final ChunkUnloadEvent event) {
+  private void chunkUnload(final ChunkUnloadEvent event) {
     if (this.chestMap.isEmpty()) {
       return;
     }

@@ -30,15 +30,13 @@ import com.github.fefo.fancyechests.message.SubjectFactory;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.io.IOException;
 import java.util.UUID;
 
-public final class ChestRemoveListener implements Listener {
+public final class ChestRemoveListener {
 
   private final FancyEChestsPlugin plugin;
   private final SubjectFactory subjectFactory;
@@ -46,10 +44,10 @@ public final class ChestRemoveListener implements Listener {
   public ChestRemoveListener(final FancyEChestsPlugin plugin) {
     this.plugin = plugin;
     this.subjectFactory = plugin.getSubjectFactory();
+    plugin.registerListener(EntityDamageByEntityEvent.class, this::chestRemove);
   }
 
-  @EventHandler
-  public void chestRemove(final EntityDamageByEntityEvent event) {
+  private void chestRemove(final EntityDamageByEntityEvent event) {
     final Entity damaged = event.getEntity();
     final UUID uuid = damaged.getUniqueId();
 

@@ -25,32 +25,29 @@
 package com.github.fefo.fancyechests.listeners.player;
 
 import com.github.fefo.fancyechests.FancyEChestsPlugin;
-import com.github.fefo.fancyechests.model.holder.FecHolder;
 import com.github.fefo.fancyechests.model.holder.HolderManager;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-public class PlayerLoginListener implements Listener {
+public class PlayerLoginListener {
 
   private final HolderManager holderManager;
 
   public PlayerLoginListener(final FancyEChestsPlugin plugin) {
     this.holderManager = plugin.getHolderManager();
+    plugin.registerListener(AsyncPlayerPreLoginEvent.class, this::asyncPlayerPreLogin, EventPriority.MONITOR);
+    plugin.registerListener(PlayerJoinEvent.class, this::playerJoin);
   }
 
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerPreLogin(final AsyncPlayerPreLoginEvent event) {
+  private void asyncPlayerPreLogin(final AsyncPlayerPreLoginEvent event) {
     if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
       this.holderManager.createHolder(event.getUniqueId());
     }
   }
 
-  @EventHandler
-  public void onPlayerJoin(final PlayerJoinEvent event) {
+  private void playerJoin(final PlayerJoinEvent event) {
     final Player player = event.getPlayer();
     this.holderManager.createInventory(player);
   }

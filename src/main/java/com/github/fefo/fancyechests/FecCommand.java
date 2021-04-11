@@ -40,15 +40,13 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.tree.RootCommandNode;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -59,7 +57,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public final class FecCommand extends Command implements Listener {
+public final class FecCommand extends Command implements PluginIdentifiableCommand {
 
   private static final Joiner OR_JOINER = Joiner.on('|');
 
@@ -85,7 +83,7 @@ public final class FecCommand extends Command implements Listener {
 
     try {
       Class.forName("com.destroystokyo.paper.event.server.AsyncTabCompleteEvent");
-      Bukkit.getPluginManager().registerEvents(this, plugin);
+      plugin.registerListener(AsyncTabCompleteEvent.class, this::asyncTabComplete, false);
     } catch (final ClassNotFoundException exception) {
       // oh well
     }
@@ -109,6 +107,11 @@ public final class FecCommand extends Command implements Listener {
                   .executes(this::setPersistent));
 
     this.dispatcher.register(builder);
+  }
+
+  @Override
+  public FancyEChestsPlugin getPlugin() {
+    return this.plugin;
   }
 
   private void usage(final MessagingSubject subject) {
@@ -308,8 +311,7 @@ public final class FecCommand extends Command implements Listener {
     return tabComplete(subject, input);
   }
 
-  @EventHandler(ignoreCancelled = true)
-  private void onAsyncTabComplete(final AsyncTabCompleteEvent event) {
+  private void asyncTabComplete(final AsyncTabCompleteEvent event) {
     if (event.isHandled() || !event.isCommand()) {
       return;
     }

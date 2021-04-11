@@ -32,22 +32,20 @@ import org.bukkit.SoundCategory;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
 import java.util.UUID;
 
-public final class ChestInteractListener implements Listener {
+public final class ChestInteractListener {
 
   private final FancyEChestsPlugin plugin;
 
   public ChestInteractListener(final FancyEChestsPlugin plugin) {
     this.plugin = plugin;
+    plugin.registerListener(PlayerInteractAtEntityEvent.class, this::chestInteract);
   }
 
-  @EventHandler
-  public void chestInteract(final PlayerInteractAtEntityEvent event) {
+  private void chestInteract(final PlayerInteractAtEntityEvent event) {
     if (this.plugin.getChestMap().isEmpty()) {
       return;
     }

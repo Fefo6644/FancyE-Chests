@@ -36,6 +36,7 @@ import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.event.ClickEvent.openUrl;
 import static net.kyori.adventure.text.event.ClickEvent.suggestCommand;
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 import static net.kyori.adventure.text.format.NamedTextColor.DARK_AQUA;
@@ -64,7 +65,9 @@ public interface Message {
                   text("E-Chests"),
                   text(" - ", GRAY),
                   text('v'),
-                  text(plugin.getDescription().getVersion()));
+                  text(plugin.getDescription().getVersion()))
+          .hoverEvent(text("github.com/Fefo6644/FancyE-Chests", GRAY))
+          .clickEvent(openUrl("https://github.com/Fefo6644/FancyE-Chests"));
 
   Args1<String> NO_PERMISSION = action ->
       prefixed()
@@ -73,103 +76,87 @@ public interface Message {
                   space(),
                   text(action));
 
-  Args1<String> COMMAND_EXCEPTION = exception ->
-      prefixed()
-          .append(text(exception, RED));
+  Args1<String> COMMAND_EXCEPTION = exception -> prefixed()
+      .append(text(exception, RED));
 
-  Args0 USAGE_TITLE = () ->
-      prefixed()
-          .append(text("Usages:"));
+  Args0 USAGE_TITLE = () -> prefixed()
+      .append(text("Usages:"));
 
-  Args1<String> USAGE_COMMAND = command ->
-      prefixed()
-          .color(GRAY)
-          .append(text('/'),
-                  text(command))
-          .hoverEvent(text()
-                          .color(GRAY)
-                          .append(text("Click to run:", WHITE),
-                                  space(),
-                                  text('/'),
-                                  text(command))
-                          .build().asHoverEvent())
-          .clickEvent(suggestCommand('/' + command));
+  Args1<String> USAGE_COMMAND = command -> prefixed()
+      .color(GRAY)
+      .append(text('/'),
+              text(command))
+      .hoverEvent(text()
+                      .color(GRAY)
+                      .append(text("Click to run:", WHITE),
+                              space(),
+                              text('/'),
+                              text(command))
+                      .build().asHoverEvent())
+      .clickEvent(suggestCommand('/' + command));
 
-  Args0 PLAYERS_ONLY = () ->
-      prefixed()
-          .append(text("Only players can run this command", RED));
+  Args0 PLAYERS_ONLY = () -> prefixed()
+      .append(text("Only players can run this command", RED));
 
-  Args0 FILES_RELOADED = () ->
-      prefixed()
-          .append(text("Files reloaded successfully!", AQUA));
+  Args0 FILES_RELOADED = () -> prefixed()
+      .append(text("Files reloaded successfully!", AQUA));
 
-  Args0 RELOADING_ERROR = () ->
-      text()
-          .append(join(newline(),
-                       prefixed()
-                           .append(text("There was an error while reloading files", RED)),
-                       prefixed()
-                           .append(text("Please check the console for any errors", RED))));
+  Args0 RELOADING_ERROR = () -> text()
+      .append(join(newline(),
+                   prefixed()
+                       .append(text("There was an error while reloading files", RED)),
+                   prefixed()
+                       .append(text("Please check the console for any errors", RED))));
 
-  Args0 ACTION_CANCELLED = () ->
-      prefixed()
-          .append(text("Action cancelled", AQUA));
+  Args0 ACTION_CANCELLED = () -> prefixed()
+      .append(text("Action cancelled", AQUA));
 
-  Args0 CHEST_REMOVED = () ->
-      prefixed()
-          .append(text("Ender chest removed", AQUA));
+  Args0 CHEST_REMOVED = () -> prefixed()
+      .append(text("Ender chest removed", AQUA));
 
-  Args2<String, Location> CHEST_REMOVED_AT = (target, location) ->
-      prefixed()
-          .color(GRAY)
-          .append(join(space(),
-                       text("Ender chest removed at", AQUA),
-                       text("x:"), text(location.getBlockX()),
-                       text("y:"), text(location.getBlockY()),
-                       text("z:"), text(location.getBlockZ()))
-                      .hoverEvent(text()
-                                      .color(GRAY)
-                                      .append(join(space(),
-                                                   text("Click to teleport to", WHITE),
-                                                   text(location.getBlockX()),
-                                                   text(location.getBlockY()),
-                                                   text(location.getBlockZ())))
-                                      .build().asHoverEvent())
-                      .clickEvent(suggestCommand(JOINER.join("/teleport", target,
-                                                             location.getBlockX(),
-                                                             location.getBlockY(),
-                                                             location.getBlockZ()))));
+  Args2<String, Location> CHEST_REMOVED_AT = (target, location) -> prefixed()
+      .color(GRAY)
+      .append(join(space(),
+                   text("Ender chest removed at", AQUA),
+                   text("x:"), text(location.getBlockX()),
+                   text("y:"), text(location.getBlockY()),
+                   text("z:"), text(location.getBlockZ()))
+                  .hoverEvent(text()
+                                  .color(GRAY)
+                                  .append(join(space(),
+                                               text("Click to teleport to", WHITE),
+                                               text(location.getBlockX()),
+                                               text(location.getBlockY()),
+                                               text(location.getBlockZ())))
+                                  .build().asHoverEvent())
+                  .clickEvent(suggestCommand(JOINER.join("/teleport", target,
+                                                         location.getBlockX(),
+                                                         location.getBlockY(),
+                                                         location.getBlockZ()))));
 
-  Args0 HIT_TO_REMOVE = () ->
-      prefixed()
-          .append(text("Hit an ender chest to remove it", AQUA));
+  Args0 HIT_TO_REMOVE = () -> prefixed()
+      .append(text("Hit an ender chest to remove it", AQUA));
 
-  Args0 RUN_TO_CANCEL = () ->
-      prefixed()
-          .append(text("Run the command again to cancel", AQUA));
+  Args0 RUN_TO_CANCEL = () -> prefixed()
+      .append(text("Run the command again to cancel", AQUA));
 
-  Args0 NO_LOADED_CHESTS = () ->
-      prefixed()
-          .append(text("There are no loaded ender chests to remove", RED));
+  Args0 NO_LOADED_CHESTS = () -> prefixed()
+      .append(text("There are no loaded ender chests to remove", RED));
 
-  Args0 COULDNT_FIND_NEAREST = () ->
-      prefixed()
-          .append(text("There are no ender chests in loaded chunks in this world", RED));
+  Args0 COULDNT_FIND_NEAREST = () -> prefixed()
+      .append(text("There are no ender chests in loaded chunks in this world", RED));
 
-  Args0 ALREADY_OCCUPIED = () ->
-      prefixed()
-          .append(text("This place is already occupied by another ender chest!", RED));
+  Args0 ALREADY_OCCUPIED = () -> prefixed()
+      .append(text("This place is already occupied by another ender chest!", RED));
 
-  Args0 SELECT_ANOTHER_LOCATION = () ->
-      prefixed()
-          .append(text("Please, select another location", RED));
+  Args0 SELECT_ANOTHER_LOCATION = () -> prefixed()
+      .append(text("Please, select another location", RED));
 
-  Args0 CHEST_PLACED = () ->
-      prefixed()
-          .append(text("Ender chest placed successfully!", AQUA));
+  Args0 CHEST_PLACED = () -> prefixed()
+      .append(text("Ender chest placed successfully!", AQUA));
 
   static TextComponent.Builder prefixed() {
-    return TextComponent.ofChildren(PREFIX, space()).toBuilder().resetStyle();
+    return TextComponent.ofChildren(PREFIX, space()).toBuilder();
   }
 
   @FunctionalInterface

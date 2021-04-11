@@ -32,8 +32,7 @@ import java.util.regex.Pattern;
 
 public abstract class ConfigKey<T> {
 
-  public static final Predicate<? super String> VALID_KEY = Pattern.compile("(?i)^[a-z-]{1,32}$")
-                                                                   .asPredicate();
+  public static final Predicate<? super String> VALID_KEY = Pattern.compile("(?i)^[a-z-]{1,32}$").asPredicate();
 
   protected final String key;
   protected final T fallback;
