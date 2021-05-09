@@ -6,8 +6,8 @@ plugins {
 
 defaultTasks("clean", "licenseMain", "shadowJar")
 
-project.group = "com.github.fefo"
-project.version = "3.0.3"
+project.group = "io.github.emilyy-dev"
+project.version = "3.0.4"
 
 java {
     toolchain {
@@ -37,8 +37,8 @@ tasks {
     }
 
     shadowJar {
-        relocate("net.kyori", "com.github.fefo.fancyechests.lib.kyori")
-        relocate("com.mojang.brigadier", "com.github.fefo.fancyechests.lib.brigadier")
+        relocate("net.kyori", "io.github.emilyydev.fancyechests.lib.kyori")
+        relocate("com.mojang.brigadier", "io.github.emilyydev.fancyechests.lib.brigadier")
     }
 }
 
@@ -49,32 +49,25 @@ license {
     mapping("java", "DOUBLESLASH_STYLE")
 
     ext["year"] = 2021
-    ext["name"] = "Fefo6644"
-    ext["email"] = "federico.lopez.1999@outlook.com"
+    ext["name"] = "emilyy-dev"
 
     include("**/*.java")
 }
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
-    maven { url = uri("https://libraries.minecraft.net/") }
-    maven { url = uri("https://jitpack.io/") }
+    maven("https://papermc.io/repo/repository/maven-public/")
+    maven("https://libraries.minecraft.net/")
+    maven("https://jitpack.io/")
 }
 
 dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
-        exclude(group = "org.bukkit", module = "bukkit")
+        exclude("org.bukkit", "bukkit")
     }
-    implementation("com.mojang:brigadier:1.0.17")
-    implementation("net.kyori:adventure-api:4.5.0") {
-        exclude(group = "org.checkerframework", module = "checker-qual")
-        exclude(group = "org.jetbrains", module = "annotations")
-    }
-    implementation("net.kyori:adventure-platform-bukkit:4.0.0-SNAPSHOT") {
-        exclude(group = "org.checkerframework", module = "checker-qual")
-        exclude(group = "org.jetbrains", module = "annotations")
-    }
+    implementation("com.mojang:brigadier:1.0.18")
+    implementation("net.kyori:adventure-api:4.7.0")
+    implementation("net.kyori:adventure-platform-bukkit:4.0.0-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:20.1.0")
 }

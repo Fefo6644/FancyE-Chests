@@ -21,7 +21,7 @@ All listed sub-commands fall under the `/fancyenderchests`/`/fec` name/label/ali
 * `/fec reload` - Reloads the config file and player data.
 * `/fec remove` - Puts the player in a "chest removal" state where you can't open rotating chests and, you can remove one of them by hitting them. Run this command again to exit said state without removing any chests.
 * `/fec remove nearest` - Removes the nearest (loaded) rotating ender chest in that world and notifies the player of where it was located. This does **not** put the player in the removal state.
-* `/fec set` - Places an ender chest that hides on close, preventing its usage until it appears again (see `secondsHidden` in [config.yml](https://github.com/Fefo6644/FancyE-Chests/blob/master/src/main/resources/config.yml#L5)).
+* `/fec set` - Places an ender chest that hides on close, preventing its usage until it appears again (see `secondsHidden` in [config.yml](https://github.com/emilyy-dev/FancyE-Chests/blob/master/src/main/resources/config.yml#L5)).
 * `/fec setpersistent` - Places an ender chest that doesn't hide on use.
 
 
@@ -36,7 +36,7 @@ You can accomplish that by setting the `fancyechests.rows` variable key to the d
 
 All you have to do is clone this repository in any directory and run `./gradlew` on Linux or `.\gradlew.bat` on Windows in your terminal of choice, the compiled jar file will be located in `./build/libs/fancyechests-{version}-all.jar`
 ```
-git clone https://github.com/Fefo6644/FancyE-Chests.git fancyechests
+git clone https://github.com/emilyy-dev/FancyE-Chests.git fancyechests
 cd fancyechests
 ./gradlew
 ```

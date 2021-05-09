@@ -1,10 +1,11 @@
 {
   "name": "FancyE-Chests",
   "authors": [
-    "Fefo"
+    "emilyy-dev"
   ],
   "version": "${pluginVersion}",
-  "main": "com.github.fefo.fancyechests.FancyEChestsPlugin",
+  "website": "https://github.com/emilyy-dev/FancyE-Chests",
+  "main": "io.github.emilyydev.fancyechests.FancyEChestsPlugin",
   "load": "POSTWORLD",
   "softdepend": [
     "Vault"
